@@ -1,0 +1,6 @@
+{
+  "checks": [
+    { "name": "launch has nothing to do in the app, and asks nothing: the box starts Steam from the manifest", "call": "launch" },
+    { "name": "it can only be launched: searching, playing and signing in are Steam's own, on the TV", "call": "search", "args": ["portal"], "throws": "doesn't have search" }
+  ]
+}

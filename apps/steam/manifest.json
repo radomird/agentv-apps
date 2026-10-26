@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "agentv.steam",
+  "name": "Steam",
+  "version": "1.0.0",
+  "author": "agentv",
+  "license": "MIT",
+  "description": "Steam Big Picture on the TV, full screen",
+  "kinds": ["tv-app"],
+  "entryPoints": { "tvApp": "app.ts" },
+  "tv": {
+    "contract": 1,
+    "category": "games",
+    "runtime": "native",
+    "package": { "pacman": "steam" },
+    "exec": ["steam", "-gamepadui"],
+    "capabilities": ["launch"],
+    "childSafe": false
+  }
+}
