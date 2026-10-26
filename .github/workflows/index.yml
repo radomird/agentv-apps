@@ -1,0 +1,41 @@
+name: Index
+
+# After every push to main, once Check has passed on it: builds index.json
+# from the apps, signs it with AgenTV's key and publishes it as the "index"
+# release, where a box reads it (ADR-010, ADR-036). bin/publish-index first
+# installs each app from the signed index, from GitHub, the way a box does.
+# The key is the AGENTV_SIGNING_KEY secret; without it nothing is published.
+
+on:
+  workflow_run:
+    workflows: [Check]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: index
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Sign and publish the index
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Sign, check and publish
+        env:
+          AGENTV_SIGNING_KEY: ${{ secrets.AGENTV_SIGNING_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: bin/publish-index

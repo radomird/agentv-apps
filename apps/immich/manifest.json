@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "agentv.immich",
+  "name": "Immich",
+  "version": "1.0.0",
+  "author": "agentv",
+  "license": "MIT",
+  "description": "Your Immich photos on the TV",
+  "kinds": ["tv-app"],
+  "entryPoints": { "tvApp": "app.ts" },
+  "tv": {
+    "contract": 1,
+    "category": "photos",
+    "runtime": "web",
+    "homeUrl": "{serverUrl}/",
+    "capabilities": ["launch", "signIn", "search", "playback"],
+    "setup": [
+      { "type": "field", "key": "serverUrl", "label": "Server address" },
+      { "type": "signIn" }
+    ],
+    "origins": ["{serverUrl}"],
+    "childSafe": false
+  }
+}

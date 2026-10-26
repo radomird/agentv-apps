@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Type-checks the apps and the tests here (ADR-019, layer 1) against the app
+# contract in agentv-os, at the commit in .github/agentv-os, with the same
+# TypeScript, Node types and Playwright types as agentv-os, fetched into a
+# folder of their own. A box never needs them: Node runs an app's TypeScript
+# as it is, and an app imports the contract's types only.
+#
+# Usage: test/types
+
+set -euo pipefail
+
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+TYPESCRIPT=typescript@5.9.3
+NODE_TYPES=@types/node@24.10.1
+PLAYWRIGHT=playwright-core@1.56.1
+
+"$ROOT/bin/fetch-agentv-os"
+tools=$(mktemp -d)
+trap 'rm -rf "$tools"' EXIT
+npm install --prefix "$tools" --no-save --no-audit --no-fund --silent "$TYPESCRIPT" "$NODE_TYPES" "$PLAYWRIGHT"
+
+# This repo's settings, with the fetched types found where they are.
+jq -n --arg base "$ROOT/tsconfig.json" --arg modules "$tools/node_modules" '{
+  extends: $base,
+  compilerOptions: {
+    typeRoots: [$modules + "/@types"],
+    paths: {"playwright-core": [$modules + "/playwright-core/index.d.ts"]}
+  }
+}' >"$tools/tsconfig.json"
+"$tools/node_modules/.bin/tsc" -p "$tools/tsconfig.json"
+echo "ok - the apps type-check against the app contract ($TYPESCRIPT, $NODE_TYPES, $PLAYWRIGHT)"

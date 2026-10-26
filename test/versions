@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# An app whose folder changed, its fixtures aside, has a newer version in its
+# manifest, so a box that has it sees there's something new (ADR-036).
+# Compared with where a pull request's branch left its base.
+#
+# Usage: test/versions [<base>]   (origin/main without one)
+
+set -euo pipefail
+
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+since=$(git -C "$ROOT" merge-base "${1:-origin/main}" HEAD)
+
+failures=0
+for manifest in "$ROOT"/apps/*/manifest.json; do
+  path="apps/$(basename -- "$(dirname -- "$manifest")")"
+  git -C "$ROOT" diff --quiet "$since" HEAD -- "$path" ":(exclude)$path/fixtures" && continue
+  now=$(jq -r .version "$manifest")
+  before=$(git -C "$ROOT" show "$since:$path/manifest.json" 2>/dev/null | jq -r .version) || before=""
+  if [[ -z $before ]]; then
+    printf 'ok - %s is new, at %s\n' "$path" "$now"
+  elif [[ $before != "$now" && $(printf '%s\n%s\n' "$before" "$now" | sort -V | tail -n 1) == "$now" ]]; then
+    printf 'ok - %s changed, from %s to %s\n' "$path" "$before" "$now"
+  else
+    printf 'not ok - %s changed, and its version is %s, not newer than %s\n' "$path" "$now" "$before" >&2
+    failures=$(( failures + 1 ))
+  fi
+done
+(( failures == 0 ))

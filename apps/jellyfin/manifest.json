@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "agentv.jellyfin",
+  "name": "Jellyfin",
+  "version": "1.0.0",
+  "author": "agentv",
+  "license": "MIT",
+  "description": "Your Jellyfin library on the TV",
+  "kinds": ["tv-app"],
+  "entryPoints": { "tvApp": "app.ts" },
+  "tv": {
+    "contract": 1,
+    "category": "media",
+    "runtime": "web",
+    "homeUrl": "{serverUrl}/web/",
+    "capabilities": ["launch", "signIn", "search", "playback"],
+    "setup": [
+      { "type": "field", "key": "serverUrl", "label": "Server address" },
+      { "type": "signIn" }
+    ],
+    "origins": ["{serverUrl}"],
+    "tiles": { "s": "logo", "m": "continue" },
+    "childSafe": false
+  }
+}

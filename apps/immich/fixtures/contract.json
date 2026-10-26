@@ -1,0 +1,19 @@
+{
+  "settings": { "serverUrl": "http://immich.test:2283" },
+  "routes": [
+    { "url": "http://immich.test:2283/?state=signed-out", "file": "pages/signed-out.html" },
+    { "url": "http://immich.test:2283/", "file": "pages/photos.html" },
+    { "url": "http://immich.test:2283/albums/00000000-0000-0000-0000-000000000001", "file": "pages/album.html" },
+    { "url": "http://immich.test:2283/api/users/me", "reply": "users-me.json" },
+    { "url": "http://immich.test:2283/api/albums", "reply": "albums.json" }
+  ],
+  "checks": [
+    { "name": "launch takes its page to Immich's web app", "page": "http://immich.test:2283/?state=signed-out", "call": "launch", "after": { "url": "^http://immich\\.test:2283/$" } },
+    { "name": "signed out, it says so, and asks Immich nothing", "page": "http://immich.test:2283/?state=signed-out", "call": "signIn.isSignedIn", "expect": false },
+    { "name": "signed in, it says so, asking Immich from the page", "page": "http://immich.test:2283/", "call": "signIn.isSignedIn", "expect": true, "asks": [{ "url": "/api/users/me$" }] },
+    { "name": "search finds an album by its name, with how many photos it has", "page": "http://immich.test:2283/", "call": "search", "args": ["autumn"], "expect": [{ "id": "00000000-0000-0000-0000-000000000001", "kind": "photo-album", "title": "Autumn", "subtitle": "2 photos" }] },
+    { "name": "search for a name no album has finds nothing", "page": "http://immich.test:2283/", "call": "search", "args": ["winter"], "expect": [] },
+    { "name": "open shows the album at its own address", "page": "http://immich.test:2283/", "call": "playback.open", "args": [{ "id": "00000000-0000-0000-0000-000000000001", "kind": "photo-album", "title": "Autumn" }], "after": { "url": "^http://immich\\.test:2283/albums/00000000-0000-0000-0000-000000000001$", "title": "^Autumn - Immich$" } },
+    { "name": "an album looked at has no playback state", "page": "http://immich.test:2283/albums/00000000-0000-0000-0000-000000000001", "call": "playback.readPlaybackState", "expect": null }
+  ]
+}
