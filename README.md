@@ -4,10 +4,10 @@ AgenTV's official apps, one folder each, and the signed index a box installs the
 
 - **Jellyfin** (`apps/jellyfin`) puts your Jellyfin library on the TV. Search it, open a film or a series, and pick up where you left off.
 - **Immich** (`apps/immich`) puts your Immich photos on the TV. Search your albums and open one.
+- **Steam** (`apps/steam`) is Steam Big Picture, full screen in its own gamescope. A game keeps running behind home, with Quit on its tile, and quitting Steam brings home back. Install Steam itself from Omarchy's desktop first (Install > Gaming > Steam), and sign in to it on the TV.
 - **Plex** (coming soon).
-- **Steam** (coming soon), as Steam Big Picture.
 
-Each app is a folder with its `manifest.json`, its code and its contract fixtures. It runs on the box in a worker of its own, reaches only the server you give it in setup, and drives your server's own web app in the TV's Chromium. You sign in there, on AgenTV's sign-in screen, and the box keeps no password for it.
+Each app is a folder with its `manifest.json`, its code and its contract fixtures. It runs on the box in a worker of its own. Jellyfin and Immich reach only the server you give them in setup, and drive your server's own web app in the TV's Chromium. You sign in there, on AgenTV's sign-in screen, and the box keeps no password for it. Steam is a native app: the box starts Steam itself, and the app has no page and reaches nothing.
 
 ## How a box gets them
 
@@ -21,7 +21,7 @@ Every pull request runs:
 
 - the same fast gate as AgenTV's other repos (`bin/agentv-check`): no em dashes, no secrets, no service automation, and clean shell;
 - the apps' types, against the app contract in [agentv-os](https://github.com/radomird/agentv-os) at the commit in `.github/agentv-os`;
-- every app against its fixtures, with agentv-os's own contract runner: replies recorded from Jellyfin's and Immich's own servers, a page in a real Chromium and no network (`test/contract`);
+- every app against its fixtures, with agentv-os's own contract runner: replies recorded from Jellyfin's and Immich's own servers, a page in a real Chromium and no network (`test/contract`). Steam has nothing to record, so its checks are the contract's own and that it does nothing more;
 - an index built from the change and signed with a throwaway key, which agentv-os's own installer then installs each app from (`test/index-test.sh`).
 
 `test/run` runs them all on your machine.
