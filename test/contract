@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Layer 3 (ADR-019; S3.1): every app here against its fixtures, each in its
+# own worker the way a box runs it, with its page in a real Chromium and no
+# network, through agentv-os's own contract runner (ADR-036).
+#
+# Usage: test/contract [<app>...]   (jellyfin, immich; every app without one)
+# AGENTV_CONTRACT_BROWSER names the browser when it isn't found by itself.
+
+set -euo pipefail
+
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+"$ROOT/bin/fetch-agentv-os"
+
+apps=()
+if (( $# > 0 )); then
+  for name in "$@"; do
+    apps+=("$ROOT/apps/$name")
+  done
+else
+  for manifest in "$ROOT"/apps/*/manifest.json; do
+    apps+=("$(dirname -- "$manifest")")
+  done
+fi
+"$ROOT/.agentv-os/test/agentv/contract/run" "${apps[@]}"

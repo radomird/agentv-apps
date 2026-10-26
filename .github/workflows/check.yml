@@ -1,0 +1,93 @@
+name: Check
+
+# Every pull request and every push to main (ADR-019, ADR-036): the fast gate
+# shared with AgenTV's other repos, the apps' types against the app contract,
+# the recorded replies, every app against its fixtures with agentv-os's own
+# contract runner, and an index built from the change that agentv-os's own
+# installer installs each app from. agentv-os is at the commit in
+# .github/agentv-os.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: "Layer 1: policy, lint and secrets"
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install shellcheck and gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          type -P shellcheck >/dev/null || { sudo apt-get update -q && sudo apt-get install -yq shellcheck; }
+          curl -fsSLo /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "$GITLEAKS_SHA256  /tmp/gitleaks.tar.gz" | sha256sum -c -
+          sudo tar -xzf /tmp/gitleaks.tar.gz -C /usr/local/bin gitleaks
+
+      - name: The fast gate
+        run: bin/agentv-check --ci
+
+      - name: The gate catches what it should
+        run: test/agentv/policy/check-test.sh --ci
+
+  types:
+    name: "Layer 1: the apps' types"
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Against the app contract in agentv-os
+        run: test/types
+
+  index:
+    name: "Layer 2: recordings, versions and the index"
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: The recorded replies
+        run: |
+          flags=()
+          [[ -n $(node -p 'process.features.typescript || ""') ]] || flags+=(--experimental-strip-types)
+          node "${flags[@]}" --disable-warning=ExperimentalWarning --test test/*.test.mts
+      - name: An app that changed has a newer version
+        if: github.event_name == 'pull_request'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: test/versions "$BASE"
+      - name: Each app installs from a signed index, the way a box installs it
+        run: test/index-test.sh
+
+  contract:
+    name: "Layer 3: every app against its fixtures"
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Each in its own worker, with its page in Chromium
+        run: test/contract

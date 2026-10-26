@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Signs index.json with AgenTV's key and publishes it as this repo's "index"
+# release, where a box reads it (ADR-010, ADR-036). It runs in CI on main,
+# with AGENTV_SIGNING_KEY from this repo's Actions secrets: the key
+# agentv-pkgs signs the packages with, whose public half agentv-keyring puts
+# on every box. Before it publishes, agentv-os's own installer installs each
+# app from the signed index, from GitHub, with agentv-keyring's key, the way
+# a box does.
+#
+# Usage: bin/publish-index   (needs GITHUB_REPOSITORY, GITHUB_SHA, GH_TOKEN
+#                             and AGENTV_SIGNING_KEY, as CI has them)
+
+set -euo pipefail
+
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+
+if [[ -z ${AGENTV_SIGNING_KEY:-} ]]; then
+  echo "::error::AGENTV_SIGNING_KEY isn't in this repo's Actions secrets yet. The index is only ever published signed." >&2
+  exit 1
+fi
+: "${GITHUB_REPOSITORY:?}" "${GITHUB_SHA:?}"
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+export GNUPGHOME="$work/gnupg"
+mkdir -m 700 "$GNUPGHOME"
+printf '%s\n' "$AGENTV_SIGNING_KEY" | gpg --batch --quiet --import
+fpr=$(gpg --batch --with-colons --list-secret-keys | awk -F: '/^fpr:/ { print $10; exit }')
+
+# The key agentv-keyring trusts, from agentv-pkgs beside this repo.
+keyring="https://raw.githubusercontent.com/${GITHUB_REPOSITORY%%/*}/agentv-pkgs/main/agentv-keyring"
+curl -fsSL -o "$work/agentv-trusted" "$keyring/agentv-trusted"
+curl -fsSL -o "$work/agentv.gpg" "$keyring/agentv.gpg"
+trusted=$(cut -d: -f1 "$work/agentv-trusted")
+if [[ $fpr != "$trusted" ]]; then
+  echo "::error::the signing key ($fpr) isn't the one agentv-keyring trusts ($trusted)" >&2
+  exit 1
+fi
+
+"$ROOT/bin/index" "$work/index"
+gpg --batch --yes --quiet --local-user "$fpr" --detach-sign --output "$work/index/index.json.sig" "$work/index/index.json"
+
+# Each app, as a box installs it.
+"$ROOT/bin/fetch-agentv-os"
+mkdir "$work/state"
+for id in $(jq -r '.apps[].id' "$work/index/index.json"); do
+  AGENTV_PATH="$ROOT/.agentv-os" AGENTV_STATE="$work/state" AGENTV_KEYRING="$work/agentv.gpg" \
+    "$ROOT/.agentv-os/bin/agentv-app-install" "$id" --index "$work/index"
+done
+
+# The release is made the first time; after that, its two files are replaced.
+if ! gh release view index -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+  gh release create index -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "App index" \
+    --notes "The signed index AgenTV boxes install the official apps from. CI replaces index.json and index.json.sig on every push to main."
+fi
+gh release upload index -R "$GITHUB_REPOSITORY" --clobber "$work/index/index.json" "$work/index/index.json.sig"
+jq -r '.apps[] | "\(.id) \(.version) at \(.commit[0:12])"' "$work/index/index.json"

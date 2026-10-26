@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Jellyfin</title>
+<!-- A stand-in for Jellyfin's own web app, not a copy of it: what its page
+     keeps once someone has signed in there, the server with its token in
+     jellyfin_credentials and the page's device id in _deviceId2, with nothing
+     playing. The ids and the token are the recordings'. -->
+<script>
+  localStorage.setItem("jellyfin_credentials", JSON.stringify({
+    Servers: [{
+      Id: "00000000000000000000000000000001",
+      Name: "fixtures",
+      ManualAddress: "http://jellyfin.test:8096",
+      UserId: "00000000000000000000000000000002",
+      AccessToken: "fixture-token",
+      DateLastAccessed: 1761400000000
+    }]
+  }));
+  localStorage.setItem("_deviceId2", "fixtures-web");
+</script>
+<body></body>
+</html>

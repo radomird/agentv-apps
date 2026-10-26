@@ -1,0 +1,56 @@
+{
+  "settings": { "serverUrl": "http://jellyfin.test:8096" },
+  "routes": [
+    { "url": "http://jellyfin.test:8096/web/?state=signed-out", "file": "pages/signed-out.html" },
+    { "url": "http://jellyfin.test:8096/web/?state=playing", "file": "pages/playing.html" },
+    { "url": "http://jellyfin.test:8096/web/", "file": "pages/home.html" },
+    { "url": "http://jellyfin.test:8096/web/test-pattern.webm", "file": "pages/test-pattern.webm", "type": "video/webm" },
+    { "url": "http://jellyfin.test:8096/Users/Me", "reply": "users-me.json" },
+    { "url": "http://jellyfin.test:8096/Items?userId=00000000000000000000000000000002&searchTerm=test&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Limit=20", "reply": "search.json" },
+    { "url": "http://jellyfin.test:8096/Items/0000000000000000000000000000000c?userId=00000000000000000000000000000002", "reply": "film.json" },
+    { "url": "http://jellyfin.test:8096/Items/00000000000000000000000000000005?userId=00000000000000000000000000000002", "reply": "episode.json" },
+    { "url": "http://jellyfin.test:8096/Shows/NextUp?userId=00000000000000000000000000000002&seriesId=00000000000000000000000000000004&Limit=1", "reply": "next-up-series.json" },
+    { "url": "http://jellyfin.test:8096/Sessions?deviceId=fixtures-web", "reply": "session-playing.json" },
+    { "url": "http://jellyfin.test:8096/Sessions/00000000000000000000000000000012/Playing?playCommand=PlayNow&itemIds=0000000000000000000000000000000c&startPositionTicks=1500000000", "method": "POST", "reply": "play-now.json" },
+    { "url": "http://jellyfin.test:8096/Sessions/00000000000000000000000000000012/Playing?playCommand=PlayNow&itemIds=00000000000000000000000000000005&startPositionTicks=0", "method": "POST", "reply": "play-now-episode.json" }
+  ],
+  "checks": [
+    { "name": "launch takes its page to Jellyfin's web app", "page": "http://jellyfin.test:8096/web/?state=signed-out", "call": "launch", "after": { "url": "^http://jellyfin\\.test:8096/web/$" } },
+    { "name": "signed out, it says so", "page": "http://jellyfin.test:8096/web/?state=signed-out", "call": "signIn.isSignedIn", "expect": false },
+    {
+      "name": "signed in, it says so, asking Jellyfin with the page's token alone",
+      "page": "http://jellyfin.test:8096/web/",
+      "call": "signIn.isSignedIn",
+      "expect": true,
+      "asks": [{ "url": "/Users/Me$", "headers": { "authorization": "^MediaBrowser Token=\"fixture-token\"$" } }]
+    },
+    {
+      "name": "search finds the film by a word in its name, with its year and poster",
+      "page": "http://jellyfin.test:8096/web/",
+      "call": "search",
+      "args": ["test"],
+      "expect": [{ "id": "0000000000000000000000000000000c", "kind": "film", "title": "Test Pattern (2026)", "subtitle": "2026", "poster": { "$match": "^http://jellyfin\\.test:8096/Items/0000000000000000000000000000000c/Images/Primary\\?tag=" } }]
+    },
+    { "name": "with nothing playing, its playback state is null", "page": "http://jellyfin.test:8096/web/", "call": "playback.readPlaybackState", "expect": null },
+    {
+      "name": "open tells the page's own session to play the film from where it was left, and waits until it plays",
+      "page": "http://jellyfin.test:8096/web/?state=playing",
+      "call": "playback.open",
+      "args": [{ "id": "0000000000000000000000000000000c", "kind": "film", "title": "Test Pattern (2026)" }],
+      "asks": [{ "url": "/Sessions/00000000000000000000000000000012/Playing\\?playCommand=PlayNow&itemIds=0000000000000000000000000000000c&startPositionTicks=1500000000$" }]
+    },
+    {
+      "name": "a series plays its next episode, from the start",
+      "page": "http://jellyfin.test:8096/web/?state=playing",
+      "call": "playback.open",
+      "args": [{ "id": "00000000000000000000000000000004", "kind": "series", "title": "Night Signal" }],
+      "asks": [{ "url": "/Sessions/00000000000000000000000000000012/Playing\\?playCommand=PlayNow&itemIds=00000000000000000000000000000005&startPositionTicks=0$" }]
+    },
+    {
+      "name": "while it plays, its state is the film's, at the page's video",
+      "page": "http://jellyfin.test:8096/web/?state=playing",
+      "call": "playback.readPlaybackState",
+      "expect": { "title": "Test Pattern (2026)", "position": { "$type": "number" }, "duration": 4, "playing": true }
+    }
+  ]
+}

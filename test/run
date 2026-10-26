@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Every check a pull request gets, short of the policy check's own tests:
+# the fast gate, the types, the recordings, the index, the versions and every
+# app against its fixtures. CI runs each as a job of its own.
+#
+# Usage: test/run
+
+set -euo pipefail
+
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$ROOT"
+
+flags=()
+[[ -n $(node -p 'process.features.typescript || ""' 2>/dev/null) ]] || flags+=(--experimental-strip-types)
+
+bin/agentv-check
+test/types
+node ${flags[@]+"${flags[@]}"} --disable-warning=ExperimentalWarning --test --test-reporter=tap test/*.test.mts | grep -E '^(not )?ok '
+test/index-test.sh
+test/versions
+test/contract

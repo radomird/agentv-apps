@@ -1,0 +1,11 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/Sessions/00000000000000000000000000000012/Playing?playCommand=PlayNow&itemIds=0000000000000000000000000000000c&startPositionTicks=1500000000"
+  },
+  "status": 204,
+  "headers": {
+    "content-type": ""
+  },
+  "body": null
+}

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Builds index.json, the app index a box installs the official apps from
+# (ADR-010, ADR-036), from the apps' manifests. For each app: its id, name,
+# version and description, this repo, the last commit that changed its folder
+# (its fixtures aside, since they never ship to a box), and the folder. Every
+# app here is official. It doesn't sign the index: bin/publish-index does.
+#
+# Usage: bin/index <out-dir> [<repo-url>]
+# The repo's address comes from GitHub's own context in CI, or else from this
+# clone's origin, as https.
+
+set -euo pipefail
+
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+out=${1:?usage: bin/index <out-dir> [<repo-url>]}
+repo=${2:-}
+if [[ -z $repo ]]; then
+  if [[ -n ${GITHUB_REPOSITORY:-} ]]; then
+    repo="${GITHUB_SERVER_URL:-https://github.com}/$GITHUB_REPOSITORY.git"
+  else
+    repo=$(git -C "$ROOT" config --get remote.origin.url | sed -E 's#^git@([^:]+):#https://\1/#; s#(\.git)?$#.git#')
+  fi
+fi
+
+mkdir -p "$out"
+: >"$out/entries"
+for manifest in "$ROOT"/apps/*/manifest.json; do
+  path="apps/$(basename -- "$(dirname -- "$manifest")")"
+  commit=$(git -C "$ROOT" log -1 --format=%H -- "$path" ":(exclude)$path/fixtures")
+  [[ -n $commit ]] || { echo "$path isn't in a commit yet" >&2; exit 1; }
+  # The manifest as that commit has it, which is what a box installs.
+  git -C "$ROOT" show "$commit:$path/manifest.json" |
+    jq -c --arg repo "$repo" --arg commit "$commit" --arg path "$path" \
+      '{id, tier: "official", name, version, description, repo: $repo, commit: $commit, path: $path}' >>"$out/entries"
+done
+jq -s --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{schema: 1, date: $date, apps: sort_by(.id)}' "$out/entries" >"$out/index.json"
+rm "$out/entries"
+echo "index.json: $(jq -r '[.apps[] | "\(.id) \(.version)"] | join(", ")' "$out/index.json")"

@@ -1,0 +1,164 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/Sessions?deviceId=fixtures-web"
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json; charset=utf-8"
+  },
+  "body": [
+    {
+      "PlayState": {
+        "PositionTicks": 1500000000,
+        "CanSeek": true,
+        "IsPaused": false,
+        "IsMuted": false,
+        "MediaSourceId": "0000000000000000000000000000000c",
+        "PlayMethod": "DirectPlay",
+        "RepeatMode": "RepeatNone",
+        "PlaybackOrder": "Default"
+      },
+      "AdditionalUsers": [],
+      "Capabilities": {
+        "PlayableMediaTypes": [
+          "Audio",
+          "Video"
+        ],
+        "SupportedCommands": [
+          "Play",
+          "PlayState",
+          "DisplayMessage"
+        ],
+        "SupportsMediaControl": true,
+        "SupportsPersistentIdentifier": false
+      },
+      "RemoteEndPoint": "172.17.0.1",
+      "PlayableMediaTypes": [
+        "Audio",
+        "Video"
+      ],
+      "Id": "00000000000000000000000000000012",
+      "UserId": "00000000000000000000000000000002",
+      "UserName": "viewer",
+      "Client": "Jellyfin Web",
+      "LastActivityDate": "2026-10-26T14:17:02.9499248Z",
+      "LastPlaybackCheckIn": "2026-10-26T14:17:02.9499254Z",
+      "DeviceName": "Chromium",
+      "NowPlayingItem": {
+        "Name": "Test Pattern (2026)",
+        "ServerId": "00000000000000000000000000000001",
+        "Id": "0000000000000000000000000000000c",
+        "DateCreated": "2026-10-26T14:16:49.2639099Z",
+        "Container": "mkv",
+        "ExternalUrls": [],
+        "Path": "/media/films/Test Pattern (2026)/Test Pattern (2026).mkv",
+        "EnableMediaSourceDisplay": true,
+        "ChannelId": null,
+        "Taglines": [],
+        "Genres": [],
+        "RunTimeTicks": 3600460000,
+        "ProductionYear": 2026,
+        "ProviderIds": {},
+        "IsFolder": false,
+        "ParentId": "0000000000000000000000000000000f",
+        "Type": "Movie",
+        "Studios": [],
+        "GenreItems": [],
+        "LocalTrailerCount": 0,
+        "SpecialFeatureCount": 0,
+        "PrimaryImageAspectRatio": 1.7777777777777777,
+        "MediaStreams": [
+          {
+            "Codec": "h264",
+            "TimeBase": "1/1000",
+            "VideoRange": "SDR",
+            "VideoRangeType": "SDR",
+            "AudioSpatialFormat": "None",
+            "DisplayTitle": "240p H264 SDR",
+            "NalLengthSize": "4",
+            "IsInterlaced": false,
+            "IsAVC": true,
+            "BitRate": 41406,
+            "BitDepth": 8,
+            "RefFrames": 1,
+            "IsDefault": false,
+            "IsForced": false,
+            "IsHearingImpaired": false,
+            "Height": 180,
+            "Width": 320,
+            "AverageFrameRate": 1,
+            "RealFrameRate": 1,
+            "ReferenceFrameRate": 1,
+            "Profile": "High 4:4:4 Predictive",
+            "Type": "Video",
+            "AspectRatio": "16:9",
+            "Index": 0,
+            "IsExternal": false,
+            "IsTextSubtitleStream": false,
+            "SupportsExternalStream": false,
+            "PixelFormat": "yuv444p",
+            "Level": 11,
+            "IsAnamorphic": false
+          },
+          {
+            "Codec": "aac",
+            "TimeBase": "1/1000",
+            "VideoRange": "Unknown",
+            "VideoRangeType": "Unknown",
+            "AudioSpatialFormat": "None",
+            "LocalizedDefault": "Default",
+            "LocalizedExternal": "External",
+            "DisplayTitle": "AAC - Mono",
+            "IsInterlaced": false,
+            "IsAVC": false,
+            "ChannelLayout": "mono",
+            "BitRate": 192000,
+            "Channels": 1,
+            "SampleRate": 22050,
+            "IsDefault": false,
+            "IsForced": false,
+            "IsHearingImpaired": false,
+            "Profile": "LC",
+            "Type": "Audio",
+            "Index": 1,
+            "IsExternal": false,
+            "IsTextSubtitleStream": false,
+            "SupportsExternalStream": false,
+            "Level": 0
+          }
+        ],
+        "VideoType": "VideoFile",
+        "ImageTags": {
+          "Primary": "00000000000000000000000000000011"
+        },
+        "BackdropImageTags": [],
+        "ImageBlurHashes": {
+          "Primary": {
+            "00000000000000000000000000000011": "W{KeG*QvVzGLkQH$t7NfXMWSj?VuslrXnlj[WEb]t6nijJbHazkC"
+          }
+        },
+        "Chapters": [],
+        "Trickplay": {},
+        "LocationType": "FileSystem",
+        "MediaType": "Video",
+        "Width": 320,
+        "Height": 180
+      },
+      "DeviceId": "fixtures-web",
+      "ApplicationVersion": "10.10.7",
+      "IsActive": true,
+      "SupportsMediaControl": true,
+      "SupportsRemoteControl": true,
+      "NowPlayingQueue": [],
+      "NowPlayingQueueFullItems": [],
+      "HasCustomDeviceName": false,
+      "ServerId": "00000000000000000000000000000001",
+      "SupportedCommands": [
+        "Play",
+        "PlayState",
+        "DisplayMessage"
+      ]
+    }
+  ]
+}

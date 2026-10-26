@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Fetches agentv-os at the commit in .github/agentv-os into .agentv-os/: the
+# app contract the apps take their types from, and the contract runner,
+# validator and installer their checks run with (ADR-036). It's the code a
+# box runs, at a commit this repo names, so a change there reaches the checks
+# here only when that line moves.
+#
+# Usage: bin/fetch-agentv-os
+# AGENTV_OS_REPO fetches from another clone instead, such as one beside this.
+
+set -euo pipefail
+
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+commit=$(sed -n '1{s/[[:space:]]//g;p;}' "$ROOT/.github/agentv-os")
+[[ $commit =~ ^[0-9a-f]{40}$ ]] || { echo ".github/agentv-os doesn't hold a commit" >&2; exit 1; }
+
+# agentv-os lives beside this repo, under the same owner.
+repo=${AGENTV_OS_REPO:-}
+if [[ -z $repo ]]; then
+  origin=$(git -C "$ROOT" config --get remote.origin.url)
+  repo="${origin%/*}/agentv-os.git"
+fi
+
+dir="$ROOT/.agentv-os"
+[[ $(git -C "$dir" rev-parse HEAD 2>/dev/null) == "$commit" ]] && exit 0
+rm -rf "$dir"
+git init -q "$dir"
+git -C "$dir" fetch -q --depth 1 "$repo" "$commit"
+git -C "$dir" -c advice.detachedHead=false checkout -q --detach FETCH_HEAD
+echo "agentv-os at ${commit:0:12}, in .agentv-os"
