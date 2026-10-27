@@ -1,0 +1,34 @@
+{
+  "settings": { "serverUrl": "http://plex.test:32400" },
+  "routes": [
+    { "url": "http://plex.test:32400/web/index.html?state=signed-out", "file": "pages/signed-out.html" },
+    { "url": "http://plex.test:32400/web/index.html", "file": "pages/home.html" },
+    { "url": "http://plex.test:32400/library/sections", "reply": "library-sections.json" }
+  ],
+  "checks": [
+    {
+      "name": "launch takes its page to Plex's web app on the server",
+      "page": "http://plex.test:32400/web/index.html?state=signed-out",
+      "call": "launch",
+      "after": { "url": "^http://plex\\.test:32400/web/index\\.html$" }
+    },
+    {
+      "name": "signed out, it says so",
+      "page": "http://plex.test:32400/web/index.html?state=signed-out",
+      "call": "signIn.isSignedIn",
+      "expect": false
+    },
+    {
+      "name": "signed in, it says so, asking the server with the page's token, as Plex's API wants",
+      "page": "http://plex.test:32400/web/index.html",
+      "call": "signIn.isSignedIn",
+      "expect": true,
+      "asks": [
+        {
+          "url": "/library/sections$",
+          "headers": { "x-plex-token": "^fixture-token$", "x-plex-product": "^AgenTV$", "accept": "^application/json$" }
+        }
+      ]
+    }
+  ]
+}

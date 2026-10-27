@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# Records Plex Media Server's replies, from its official container image, as
+# fixtures for the Plex app's contract tests (ADR-019 layer 3, S3.1). The
+# server is a throwaway one with no account. Plex lets a server answer the
+# networks it's told to trust without a sign-in, so it answers here as it
+# answers the app asking with a signed-in page's token. Each request the app
+# makes is recorded with its reply, in apps/plex/fixtures/<name>.json as
+# { request, status, headers, body }, and the id the server made up for
+# itself is replaced with a plain numbered one.
+#
+# The app reads the account's token from Plex's web app, as
+# myPlexAccessToken, so this checks the web app in the same image keeps it
+# under that name, and recording.json says so.
+#
+# Usage: test/record/plex   (needs docker, curl and jq)
+
+set -euo pipefail
+
+ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
+DIR="$ROOT/apps/plex/fixtures"
+IMAGE=${AGENTV_PLEX_IMAGE:-plexinc/pms-docker:1.43.4.10903-e5521bd8c}
+PORT=${AGENTV_PLEX_PORT:-32401}
+BASE="http://127.0.0.1:$PORT"
+# Who's asking, as the app says it.
+CLIENT=(-H "X-Plex-Product: AgenTV" -H "X-Plex-Client-Identifier: agentv-plex" -H "Accept: application/json")
+
+work=$(mktemp -d)
+name="agentv-plex-$$"
+cleanup() {
+  docker rm -f "$name" >/dev/null 2>&1 || true
+  rm -rf "$work"
+}
+trap cleanup EXIT
+
+# Requests from this machine reach the container from Docker's own network,
+# which the server is told to trust.
+docker run -d --name "$name" -p "127.0.0.1:$PORT:32400" -e TZ=UTC -e ALLOWED_NETWORKS=172.16.0.0/12 "$IMAGE" >/dev/null
+for _ in $(seq 1 120); do
+  curl -fsS "${CLIENT[@]}" "$BASE/identity" >/dev/null 2>&1 && break
+  sleep 1
+done
+curl -fsS "${CLIENT[@]}" "$BASE/identity" >/dev/null 2>&1 || { docker logs "$name" | tail -n 30 >&2; echo "Plex Media Server never came up" >&2; exit 1; }
+
+# record <name> <method> <path>: one request and its reply, kept.
+record() {
+  local status type
+  status=$(curl -sS -X "$2" "${CLIENT[@]}" "$BASE$3" -o "$work/body" -D "$work/headers" -w '%{http_code}')
+  [[ $status == 2* ]] || { echo "Plex answered $status for $2 $3" >&2; cat "$work/body" >&2; exit 1; }
+  type=$(tr -d '\r' <"$work/headers" | sed -n 's/^content-type: //Ip' | tail -n 1)
+  jq -c . "$work/body" >"$work/reply"
+  jq -n --arg method "$2" --arg path "$3" --argjson status "$status" --arg type "$type" --slurpfile reply "$work/reply" \
+    '{request: {method: $method, path: $path}, status: $status, headers: {"content-type": $type}, body: $reply[0]}' >"$DIR/$1.json"
+  echo "recorded $1: $2 $3 ($status)"
+}
+
+# The libraries need a moment after the server first answers.
+for _ in $(seq 1 60); do
+  curl -fsS "${CLIENT[@]}" "$BASE/library/sections" >/dev/null 2>&1 && break
+  sleep 1
+done
+record identity GET /identity
+record library-sections GET /library/sections
+
+# What Plex's web app in this image keeps its sign-in as.
+key=$(docker exec "$name" sh -c 'grep -rlo --include="*.js" "myPlexAccessToken" /usr/lib/plexmediaserver/Resources 2>/dev/null | head -n 1')
+[[ -n $key ]] || { echo "Plex's web app in $IMAGE doesn't keep myPlexAccessToken, so the app reads the wrong thing" >&2; exit 1; }
+
+# The id the server made up for itself, as a plain numbered one.
+machine=$(jq -r '.body.MediaContainer.machineIdentifier' "$DIR/identity.json")
+for file in "$DIR"/identity.json "$DIR"/library-sections.json; do
+  jq --arg machine "$machine" 'walk(if type == "string" then gsub($machine; "0000000000000000000000000000000000000001") else . end)' "$file" >"$work/clean"
+  mv "$work/clean" "$file"
+done
+
+version=$(jq -r '.body.MediaContainer.version' "$DIR/identity.json")
+jq -n --arg image "$IMAGE" --arg version "$version" --arg recorded "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg web "${key#/usr/lib/plexmediaserver/}" \
+  '{image: $image, version: $version, recorded: $recorded, webKeepsTokenAs: "myPlexAccessToken", webFile: $web}' >"$DIR/recording.json"
+echo "recorded Plex Media Server $version from $IMAGE"
