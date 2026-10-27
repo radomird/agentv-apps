@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Plex</title>
+<!-- A stand-in for Plex's own web app, not a copy of it: what its page keeps
+     once someone has signed in there, the account's token in
+     myPlexAccessToken, which test/record/plex checks the web app in Plex's
+     server image keeps. The token is the recordings'. -->
+<script>
+  localStorage.setItem("myPlexAccessToken", "fixture-token");
+</script>
+<body></body>
+</html>

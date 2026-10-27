@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "agentv.plex",
+  "name": "Plex",
+  "version": "1.0.0",
+  "author": "agentv",
+  "license": "MIT",
+  "description": "Your Plex library on the TV",
+  "kinds": ["tv-app"],
+  "entryPoints": { "tvApp": "app.ts" },
+  "tv": {
+    "contract": 1,
+    "category": "media",
+    "runtime": "web",
+    "homeUrl": "{serverUrl}/web/index.html",
+    "capabilities": ["launch", "signIn"],
+    "setup": [
+      { "type": "field", "key": "serverUrl", "label": "Server address" },
+      { "type": "signIn" }
+    ],
+    "origins": ["{serverUrl}", "https://app.plex.tv", "https://plex.tv"],
+    "tiles": { "s": "logo" },
+    "childSafe": false
+  }
+}

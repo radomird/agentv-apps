@@ -1,10 +1,10 @@
 name: Record fixtures
 
 # Records the replies the apps' contract tests use as fixtures (ADR-019,
-# layer 3), from Jellyfin's and Immich's official container images. A push to
-# record/jellyfin or record/immich (or a branch starting with one of those)
-# records that app's and pushes them back to the branch, where someone copies
-# them into a pull request. Run by hand, it records what it's asked for and
+# layer 3), from Jellyfin's, Immich's and Plex Media Server's official
+# container images. A push to record/jellyfin, record/immich or record/plex
+# (or a branch starting with one of those) records that app's and pushes them
+# back to the branch, where someone copies them into a pull request. Run by hand, it records what it's asked for and
 # keeps it as an artifact, pushing nothing.
 
 on:
@@ -15,7 +15,7 @@ on:
       what:
         description: "What to record"
         type: choice
-        options: [jellyfin, immich]
+        options: [jellyfin, immich, plex]
         default: jellyfin
 
 permissions:
@@ -45,7 +45,8 @@ jobs:
           case "$what" in
             jellyfin*) what=jellyfin ;;
             immich*) what=immich ;;
-            *) echo "::error::a record branch is record/jellyfin or record/immich, not $BRANCH"; exit 1 ;;
+            plex*) what=plex ;;
+            *) echo "::error::a record branch is record/jellyfin, record/immich or record/plex, not $BRANCH"; exit 1 ;;
           esac
           echo "what=$what" >>"$GITHUB_OUTPUT"
 
