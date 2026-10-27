@@ -1,0 +1,7 @@
+{
+  "image": "plexinc/pms-docker:1.43.4.10903-e5521bd8c",
+  "version": "1.43.4.10903-e5521bd8c",
+  "recorded": "2026-10-27T13:06:34Z",
+  "webKeepsTokenAs": "myPlexAccessToken",
+  "webFile": "Resources/Plug-ins-e5521bd8c/WebClient.bundle/Contents/Resources/js/main-8792-5e6a05fd7fbc07797f88-plex-4.160.0-75ddd7b.js"
+}

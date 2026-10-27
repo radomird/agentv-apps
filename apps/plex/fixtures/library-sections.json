@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/library/sections"
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "MediaContainer": {
+      "size": 0,
+      "allowSync": false,
+      "title1": "Plex Library"
+    }
+  }
+}
