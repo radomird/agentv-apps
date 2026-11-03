@@ -13,7 +13,7 @@ The plan lives in `agentv-planning`: read its `HANDOFF.md` first, then the ADRs 
 - **A changed app gets a newer version** in its manifest (`test/versions`), since the index lists each app at the last commit that changed it.
 - **No secrets.** The index is signed in CI with the `AGENTV_SIGNING_KEY` secret, AgenTV's own key.
 - **The owner name is never in code.** Scripts read it from GitHub's context or the clone's origin.
-- **Copy** follows Omarchy's voice: plain words, "coming soon" for what isn't built, "Powered by Omarchy", and no em dashes anywhere.
+- **Copy** reads like an indie dev explaining the project to another dev: short sentences, plain words before project words, what actually happens in order, and no inside references (ADRs, acceptance ids) in public text. "Coming soon" for what isn't built, "Powered by Omarchy", and no em dashes anywhere. The `agentv-copy` skill has the rules and examples.
 
 ## Before you commit
 

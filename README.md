@@ -1,38 +1,53 @@
 # agentv-apps
 
-AgenTV's official apps, one folder each, and the signed index a box installs them from. Powered by [Omarchy](https://omarchy.org).
+The official apps for [AgenTV](https://github.com/radomird/agentv-os), the world's first open-source agentic TV OS. Powered by [Omarchy](https://omarchy.org).
 
-- **Jellyfin** (`apps/jellyfin`) puts your Jellyfin library on the TV. Search it, open a film or a series, and pick up where you left off.
+Each app lives in its own folder here. This repo also publishes the list of apps your box installs from.
+
+## The apps
+
+- **Jellyfin** (`apps/jellyfin`) puts your Jellyfin library on the TV. You can search it, open a film or a show, and pick up where you left off.
 - **Immich** (`apps/immich`) puts your Immich photos on the TV. Search your albums and open one.
-- **Steam** (`apps/steam`) is Steam Big Picture, full screen in its own gamescope. A game keeps running behind home, with Quit on its tile, and quitting Steam brings home back. Adding it from Apps on the TV installs Steam itself too, and you sign in to Steam on the TV.
-- **Plex** (`apps/plex`) opens your Plex server's own web app on the TV, where you sign in with your Plex account. Search and picking up where you left off are coming soon.
+- **Steam** (`apps/steam`) opens Steam Big Picture full screen. Your game keeps running when you go back to home, and its tile gets a Quit button. When you add Steam from Apps on the TV, the box installs Steam too, and you sign in on the TV.
+- **Plex** (`apps/plex`) opens your Plex server's web app on the TV, and you sign in with your Plex account. Search and picking up where you left off are coming soon.
 
-Each app is a folder with its `manifest.json`, its code and its contract fixtures. It runs on the box in a worker of its own. Jellyfin, Immich and Plex reach only the server you give them in setup (and Plex its own sign-in page), and drive your server's own web app in the TV's Chromium. You sign in there, on AgenTV's sign-in screen, and the box keeps no password for it. Steam is a native app: the box starts Steam itself, and the app has no page and reaches nothing.
+## How an app works
 
-## How a box gets them
+An app is a folder with a `manifest.json`, its code and its test data. The manifest says what the app is, what it can do and what it's allowed to reach.
 
-CI builds `index.json` from the apps' manifests. For each app it names this repo, the app's folder and the last commit that changed it, and it signs the file with AgenTV's key, the same one the packages are signed with. The index is published as the `index` release here.
+On the box, every app runs on its own, apart from the others. Jellyfin, Immich and Plex only talk to the server you point them at in setup (Plex also reaches its own sign-in page). They use your server's own web app in the TV's browser. You sign in there, on AgenTV's sign-in screen, and the box never keeps your password.
 
-A box reads it, checks the signature against the key it already has, and fetches the app's folder at exactly that commit. It checks the app against the app contract before anything of it runs, and leaves its fixtures out. A change to one app doesn't touch the others, and an app that changes gets a new version.
+Steam is different. It's a normal program, so the box just starts it, and the app itself doesn't talk to anything.
 
-## Checks
+## How your box installs an app
 
-Every pull request runs:
+1. When an app changes, CI rebuilds the list of apps, `index.json`. For each app, the list says where its folder is and which commit to use.
+2. CI signs the list with AgenTV's key, the same one the packages use, and puts it in this repo's `index` release.
+3. Your box downloads the list and checks the signature, so it knows the list really came from AgenTV.
+4. It downloads the app's folder at exactly that commit and checks that the app follows AgenTV's app rules. Only then does anything in it run. The test data stays behind.
 
-- the same fast gate as AgenTV's other repos (`bin/agentv-check`): no em dashes, no secrets, no service automation, and clean shell;
-- the apps' types, against the app contract in [agentv-os](https://github.com/radomird/agentv-os) at the commit in `.github/agentv-os`;
-- every app against its fixtures, with agentv-os's own contract runner: replies recorded from Jellyfin's, Immich's and Plex's own servers, a page in a real Chromium and no network (`test/contract`). Steam has nothing to record, so its checks are the contract's own and that it does nothing more;
-- an index built from the change and signed with a throwaway key, which agentv-os's own installer then installs each app from (`test/index-test.sh`).
+Changing one app doesn't touch the others, and every change gets a new version number.
 
-`test/run` runs them all on your machine.
+## Running the tests
 
-## Fixtures
+Every pull request runs four checks:
 
-The replies come from the services' official container images, recorded in CI. Push a branch named `record/jellyfin`, `record/immich` or `record/plex`, and the Record fixtures workflow pushes fresh ones back to it. Each app's `fixtures/README.md` says what's in them.
+- **The basics,** the same as AgenTV's other repos (`bin/agentv-check`): no em dashes, no secrets, nothing that automates a streaming service, and clean shell scripts.
+- **Types,** against the app rules in [agentv-os](https://github.com/radomird/agentv-os) at the commit pinned in `.github/agentv-os`.
+- **Each app against real replies.** Jellyfin, Immich and Plex are tested against replies recorded from their real servers, in a real Chromium, with no network (`test/contract`). Steam doesn't talk to a server, so there's nothing to record. Its tests just check that it follows the app rules and doesn't try to do anything else.
+- **A real install.** CI builds a test list from your change, signs it with a throwaway key, and has AgenTV's own installer install each app from it (`test/index-test.sh`).
+
+Run `test/run` to do all of it on your machine.
+
+## Recording new test data
+
+The recorded replies come from each service's official Docker image, recorded in CI. To record fresh ones, push a branch called `record/jellyfin`, `record/immich` or `record/plex`. The Record fixtures workflow records them and pushes them back to that branch.
+
+Each app's `fixtures` folder has a short README that explains what's in it.
 
 ## What isn't here
 
-Nothing that automates Disney+, Prime Video, Netflix or Spotify. Apps an agent builds on a box stay on that box.
+Nothing that automates Disney+, Prime Video, Netflix or Spotify. And the apps AgenTV's agent builds on someone's box stay on that box.
 
 ## License
 

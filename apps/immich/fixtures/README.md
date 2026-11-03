@@ -1,9 +1,11 @@
-# Immich fixtures
+# Immich test data
 
-The Immich app's contract tests (`contract.json`), run by agentv-os's contract runner (S3.1).
+This is what the Immich app's tests use (`contract.json`).
 
-The `*.json` replies and `preview.jpeg` come from Immich's own server, recorded by `test/record/immich` in CI from its official container images. `recording.json` says which release and when. The server was a throwaway one with three photos of a test pattern made with ffmpeg for this, so they're ours to give away, under [CC0](https://creativecommons.org/publicdomain/zero/1.0/). Its access token is replaced with `fixture-token`, and the ids it made up with plain numbered ones.
+The `*.json` replies and `preview.jpeg` were recorded in CI from Immich's official Docker image, by `test/record/immich`. `recording.json` says which release and when.
 
-`pages/` are stand-ins for Immich's web app, not copies of it: a page at its address with the cookie that says it's signed in, or without it, and an album's address. The app only needs a page there, since it asks Immich's API from it.
+The server was a throwaway one with three test-pattern photos made with ffmpeg just for this, so they're free to share under [CC0](https://creativecommons.org/publicdomain/zero/1.0/). Its access token is swapped for `fixture-token`, and its random ids for plain numbers.
 
-To record the replies again, push a branch named `record/immich`: the Record fixtures workflow pushes fresh ones back to it.
+`pages/` aren't copies of Immich's web app. They're small stand-ins at its address: one signed in (with the cookie that says so), one not, and an album page. That's all the app needs, since it talks to Immich's API from that page.
+
+To record new replies, push a branch called `record/immich`. The Record fixtures workflow pushes fresh ones back to it.
