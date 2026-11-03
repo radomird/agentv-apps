@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   policy:
-    name: "Layer 1: policy, lint and secrets"
+    name: "Lint, secrets and house rules"
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
@@ -49,7 +49,7 @@ jobs:
         run: test/agentv/policy/check-test.sh --ci
 
   types:
-    name: "Layer 1: the apps' types"
+    name: "Type checks"
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
@@ -60,7 +60,7 @@ jobs:
         run: test/types
 
   index:
-    name: "Layer 2: recordings, versions and the index"
+    name: "Recordings, versions and the app list"
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
@@ -82,7 +82,7 @@ jobs:
         run: test/index-test.sh
 
   contract:
-    name: "Layer 3: every app against its fixtures"
+    name: "Each app against its recorded replies"
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
