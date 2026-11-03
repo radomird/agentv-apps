@@ -1,11 +1,13 @@
-# Plex fixtures
+# Plex test data
 
-The Plex app's contract tests (`contract.json`), run by agentv-os's contract runner (S3.1).
+This is what the Plex app's tests use (`contract.json`).
 
-The `*.json` replies come from Plex Media Server itself, recorded by `test/record/plex` in CI from its official container image. `recording.json` says which image and when. The server was a throwaway one with no account: Plex lets a server answer the networks it's told to trust without a sign-in, so it answered the recorder as it answers the app with a signed-in page's token. The id it made up for itself is replaced with a plain numbered one.
+The `*.json` replies were recorded in CI from Plex Media Server's official Docker image, by `test/record/plex`. `recording.json` says which image and when.
 
-`pages/` are stand-ins for Plex's web app, not copies of it: a page at its address that keeps what Plex's page keeps once someone has signed in there (the account's token in `myPlexAccessToken`), and one that keeps nothing. The recorder checks the web app in the same image keeps its sign-in under that name, and `recording.json` says so.
+The server was a throwaway one with no account. Plex answers networks it's told to trust without a sign-in, so it answered the recorder the same way it answers the app with a signed-in page's token. Its random id is swapped for a plain number.
 
-Searching and opening an episode aren't here yet. They need Plex's web player signed in to a real account, to write them against and to record.
+`pages/` aren't copies of Plex's web app. They're small stand-ins at its address: one with what Plex's page saves after you sign in (the account's token in `myPlexAccessToken`), and one with nothing saved. The recorder checks that the web app in the same image still saves its sign-in under that name, and `recording.json` notes it.
 
-To record the replies again, push a branch named `record/plex`: the Record fixtures workflow pushes fresh ones back to it.
+Search and opening an episode aren't tested yet. They need Plex's web player signed in to a real account, both to write the tests and to record them.
+
+To record new replies, push a branch called `record/plex`. The Record fixtures workflow pushes fresh ones back to it.

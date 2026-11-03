@@ -1,7 +1,9 @@
-# Steam fixtures
+# Steam test data
 
-The Steam app's contract tests (`contract.json`), run by agentv-os's contract runner (S3.1).
+This is what the Steam app's tests use (`contract.json`).
 
-There's nothing recorded here. Steam is a native app: the box starts it from the manifest's `exec`, in a gamescope of its own, and the app has no page and asks no server anything. So the checks are that its package passes the app contract as an official app, that `launch` does nothing and asks nothing, and that it can't be asked for anything else.
+There's nothing recorded here. Steam is a normal program: the box starts it from the `exec` line in its manifest, in its own gamescope window. The app has no page and doesn't talk to a server.
 
-Steam opening full screen, home keeping a game running with Quit on its tile, and home coming back when Steam quits are agentv-iso's S3.5 image check, with a stand-in for Steam, and Radomir's on the NUC with Steam itself.
+So the tests check that the app follows AgenTV's rules for an official app, that opening it doesn't do or ask for anything, and that it can't be asked to do anything else.
+
+The rest needs Steam on an installed box. agentv-iso's image tests use a stand-in for Steam to check that it opens full screen, that a game keeps running behind home with Quit on its tile, and that home comes back when Steam quits. I'll check the same with Steam itself on my NUC.
