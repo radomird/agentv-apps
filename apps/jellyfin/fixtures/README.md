@@ -8,10 +8,6 @@ The server was a throwaway one with a film and an episode of a test pattern, mad
 
 On the TV, the app uses the token from Jellyfin's own page. So the recorder signs in a second device the same way that page does, with a websocket open, and records the app's requests as that page's session.
 
-`pages/` aren't copies of Jellyfin's web app. They're small stand-ins at its address:
-
-- one with what Jellyfin's page saves after you sign in (the server and token in `jellyfin_credentials`, the device id in `_deviceId2`);
-- one with nothing saved;
-- one playing a test-pattern video, also made with ffmpeg.
+`pages/` aren't copies of Jellyfin's web app. They're small stand-ins at its address. One has what Jellyfin's page saves after you sign in (the server and token in `jellyfin_credentials`, the device id in `_deviceId2`), one has nothing saved, and one plays a test-pattern video, also made with ffmpeg.
 
 To record new replies, push a branch called `record/jellyfin`. The Record fixtures workflow pushes fresh ones back to it.
