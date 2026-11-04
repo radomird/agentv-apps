@@ -1,0 +1,15 @@
+# Where each official streaming app lives in this repo (ADR-066): a
+# service's id from the headings in service-hosts and service-names, then its
+# app's folder. Inside its own folder, an app may name its service and reach
+# its hosts. Everywhere else here, and in every other repo, they're refused.
+# Only this repo has this file.
+#
+# SkyShowtime has no folder: it waits until it plays on Linux. Spotify has no
+# heading at all, so it's refused everywhere.
+
+disneyplus   apps/disneyplus/
+netflix      apps/netflix/
+primevideo   apps/primevideo/
+hbomax       apps/hbomax/
+youtube      apps/youtube/
+youtubekids  apps/youtubekids/
