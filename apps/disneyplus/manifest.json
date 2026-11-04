@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "agentv.disneyplus",
+  "name": "Disney+",
+  "version": "1.0.0",
+  "author": "agentv",
+  "license": "MIT",
+  "description": "Disney+ on the TV",
+  "kinds": ["tv-app"],
+  "entryPoints": { "tvApp": "app.ts" },
+  "tv": {
+    "contract": 1,
+    "category": "streaming",
+    "runtime": "web",
+    "homeUrl": "https://www.disneyplus.com/",
+    "capabilities": ["launch", "signIn", "search", "playback"],
+    "setup": [{ "type": "signIn" }],
+    "origins": ["https://www.disneyplus.com"],
+    "tiles": { "s": "logo", "m": "continue" },
+    "childSafe": false
+  }
+}

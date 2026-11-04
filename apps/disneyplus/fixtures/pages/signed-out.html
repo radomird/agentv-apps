@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Disney+ stand-in: signed out</title>
+<!-- A stand-in, made by hand: Disney+'s start page as someone signed out
+     sees it, with only what the app reads, its Log In link. -->
+<style>
+  body { margin: 0; background: #111; color: #eee; font: 24px sans-serif; }
+  header { display: flex; justify-content: flex-end; padding: 24px 48px; }
+  a { color: #eee; padding: 12px 24px; }
+</style>
+<body>
+  <script>
+    localStorage.removeItem("stand-in-signed-in");
+  </script>
+  <header><a data-testid="log_in" href="/identity/login/enter-email">Log in</a></header>
+  <main><h1>Stand-in start page</h1></main>
+</body>
+</html>

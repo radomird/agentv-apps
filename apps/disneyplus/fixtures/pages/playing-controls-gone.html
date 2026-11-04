@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Disney+ stand-in: an episode playing</title>
+<!-- The same episode as playing.html, with its controls gone and nothing to
+     show them. -->
+<style>
+  body { margin: 0; background: #000; color: #eee; font: 24px sans-serif; }
+  .surface { position: fixed; inset: 0; }
+  disney-web-player, disney-web-player-ui { position: absolute; inset: 0; display: block; }
+  video { width: 100%; height: 100%; }
+</style>
+<body>
+  <div class="surface">
+    <disney-web-player><video muted playsinline aria-label="Paper Boats"></video></disney-web-player>
+    <disney-web-player-ui><main-app-controls-overlay></main-app-controls-overlay></disney-web-player-ui>
+  </div>
+  <script>
+    // The video has no picture, so it never moves on from 0 s, but it plays
+    // and pauses like any other.
+    const video = document.querySelector("video");
+    video.play().catch(() => {});
+
+    // The controls, each in a shadow root of its own, inside the overlay's,
+    // the way Disney+'s player draws them.
+    const controls = null;
+    const part = (root, tag, html) => {
+      const host = document.createElement(tag);
+      host.attachShadow({ mode: "open" }).innerHTML = html;
+      root.append(host);
+      return host.shadowRoot;
+    };
+    const show = () => {
+      const overlay = document.querySelector("main-app-controls-overlay");
+      if (!controls || overlay.shadowRoot) return;
+      const root = overlay.attachShadow({ mode: "open" });
+      root.innerHTML = "<style>:host { position: absolute; inset: auto 48px 48px 48px; display: flex; gap: 24px; align-items: center; } [role] { min-width: 64px; height: 64px; background: #eee; color: #000; }</style>";
+      const bug = part(root, "title-bug", '<div data-qa="title-bug.title"></div>');
+      bug.firstChild.textContent = controls.title;
+      if (controls.subtitle) {
+        const subtitle = document.createElement("div");
+        subtitle.dataset.qa = "title-bug.subtitle";
+        subtitle.textContent = controls.subtitle;
+        bug.append(subtitle);
+      }
+      const toggle = part(root, "toggle-play-pause", '<div role="button" tabindex="0" data-qa="toggle-play-pause.buttonContainer toggle-play-pause.button-container"></div>').firstChild;
+      const label = () => toggle.setAttribute("aria-label", video.paused ? "Play" : "Pause");
+      label();
+      video.addEventListener("play", label);
+      video.addEventListener("pause", label);
+      toggle.addEventListener("click", () => (video.paused ? video.play().catch(() => {}) : video.pause()));
+      const timeline = part(root, "progress-bar", '<div role="slider" aria-label="Timeline" aria-valuemin="0" data-qa="progress-bar.seekableRange"></div>').firstChild;
+      timeline.setAttribute("aria-valuemax", controls.max);
+      timeline.setAttribute("aria-valuenow", controls.now);
+      if (controls.next) {
+        const next = part(root, "play-next", '<div role="button" tabindex="0" aria-label="PLAY NEXT" data-qa="play-next.button-container"></div>').firstChild;
+        next.addEventListener("click", () => location.assign(controls.next));
+      }
+    };
+    // Its controls never show here.
+  </script>
+</body>
+</html>

@@ -6,8 +6,9 @@ If you run AgenTV, this is where the apps in _Apps_ on your TV come from. If you
 
 ## What you get
 
-Right now there are four:
+Right now there are five:
 
+- **Disney+.** Disney+'s own site on the TV. You sign in from your phone, with its password manager. Then you can search, ask for something by name, and pick up where you left off from its tile. Your phone's arrows get you around Disney+'s pages. Profiles for children are coming soon.
 - **Jellyfin.** Your Jellyfin films and shows on the TV. Search, open something, and pick up where you left off.
 - **Immich.** Your Immich photos on the TV. Search your albums and open one.
 - **Steam.** Steam Big Picture, full screen. Go back to home and your game keeps running, with a Quit button on its tile. If Steam isn't on the box yet, adding the app installs it, and you sign in right on the TV.
@@ -15,9 +16,11 @@ Right now there are four:
 
 To add one, open _Apps_ on the TV and pick it. That's it.
 
+Netflix, Prime Video, HBO Max, YouTube and YouTube Kids are coming soon.
+
 ## Your passwords stay yours
 
-Jellyfin, Immich and Plex only talk to the server you point them at (and Plex to its own sign-in page). You sign in on your server's own page, inside AgenTV's sign-in screen, and the box never keeps your password.
+Jellyfin, Immich and Plex only talk to the server you point them at (and Plex to its own sign-in page). Disney+ only opens Disney+'s own site. Either way, you sign in on that site's own page, inside AgenTV's sign-in screen, and the box never keeps your password.
 
 Steam is just Steam. The box starts it like any other program, and the app itself doesn't talk to anything.
 
@@ -29,7 +32,7 @@ Your box downloads that list and checks the signature, so it knows the list real
 
 ## For developers
 
-Each app is a folder in `apps/` with a `manifest.json` (what the app is and what it's allowed to reach), its code, and recorded test data.
+Each app is a folder in `apps/` with a `manifest.json` (what the app is and what it's allowed to reach), its code, and its test data.
 
 To run every check on your machine:
 
@@ -39,18 +42,26 @@ test/run
 
 That's what CI runs on a pull request:
 
-- the basic checks every AgenTV repo has: no em dashes, no secrets, nothing that automates a streaming service, and clean shell scripts
+- the basic checks every AgenTV repo has: no em dashes, no secrets, no streaming service named outside its own app's folder, and clean shell scripts
 - type checks against the app rules in [agentv-os](https://github.com/radomird/agentv-os)
-- each app against replies recorded from its real server, in a real Chromium with no network
+- each app against its test data (replies recorded from its real server, or pages made by hand), in a real Chromium with no network
 - a real install, from a test list signed with a throwaway key
 
 Steam doesn't talk to a server, so there's nothing to record for it. Its tests just make sure it follows the rules and doesn't try anything else.
+
+Disney+ doesn't have a server you can run either. Like every streaming app here, I write it by hand against pages I saved from my own signed-in sessions, and those pages stay private. So its tests use small pages I made by hand, at Disney+'s addresses, with only what the app reads. The tests press your phone's arrows in them too.
 
 To record fresh test data, push a branch named `record/jellyfin`, `record/immich` or `record/plex`. CI starts the service's official Docker image, records new replies, and pushes them back to your branch. Each app's `fixtures` folder has a short README about what's in it.
 
 ## What you won't find here
 
-Anything that automates Disney+, Prime Video, Netflix or Spotify. And the apps AgenTV's agent builds on your box stay on your box.
+Anything for Spotify. And the apps AgenTV's agent builds on your box stay on your box.
+
+Each streaming app keeps its service's addresses, and the parts of its pages it reads, in its own folder. Nothing else in this repo has them.
+
+## Whose names these are
+
+Disney+, Netflix, Prime Video, HBO Max and YouTube are trademarks of their owners. I only name them to say which services the apps work with. The apps aren't made or endorsed by any of them.
 
 ## License
 

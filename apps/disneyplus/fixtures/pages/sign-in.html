@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Disney+ stand-in: sign in</title>
+<!-- A stand-in, made by hand: Disney+'s sign-in form at the step that asks
+     for the email, which the phone fills. Someone signed in already is sent
+     on past it, as Disney+ did on the NUC. -->
+<style>
+  body { margin: 0; background: #111; color: #eee; font: 24px sans-serif; }
+  form { display: flex; flex-direction: column; gap: 24px; width: 600px; margin: 120px auto; }
+  input, button { font: inherit; padding: 12px; }
+</style>
+<body>
+  <script>
+    if (localStorage.getItem("stand-in-signed-in")) location.replace("/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001");
+  </script>
+  <form>
+    <label for="email">Email</label>
+    <input type="email" id="email" autocomplete="username">
+    <button type="button">Continue</button>
+  </form>
+</body>
+</html>
