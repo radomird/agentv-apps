@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Disney+ stand-in: a film</title>
+<!-- A stand-in for a film's page on Disney+, made by hand: its play button, and
+     a trailer that's also a link to the player, as on Disney+. The film is
+     made up. -->
+<style>
+  body { margin: 0; background: #111; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  nav button { margin-left: auto; font: inherit; padding: 8px 16px; }
+  main { padding: 24px 48px; }
+  input { font: inherit; width: 296px; padding: 12px; }
+  .row { display: flex; gap: 24px; margin: 32px 0; }
+  .row a { display: block; width: 320px; color: #eee; text-decoration: none; }
+  [data-testid="set-item-tile"] { height: 180px; background: #345; }
+</style>
+<body>
+  <script>
+    // Signed in, as far as the stand-ins go: sign-in.html sends you on.
+    localStorage.setItem("stand-in-signed-in", "yes");
+  </script>
+  <nav>
+    <a href="/home" aria-label="Home">Home</a>
+    <a href="/eu/browse/search" aria-label="Search">Search</a>
+    <a href="/browse/movies" aria-label="Movies">Movies</a>
+    <a href="/browse/series" aria-label="Series">Series</a>
+    <button type="button" data-testid="dropdown-active-profile" aria-label="Sam's profile. Select this to change profiles." aria-expanded="false"><p>Sam</p></button>
+  </nav>
+  <main>
+    <h1>Kite Weather</h1>
+    <a data-testid="playback-action-button" aria-label="PLAY" href="/eu/play/f11f0000-0000-4000-8000-000000000002">play</a>
+    <div class="row">
+      <a data-testid="set-item" data-item-id="7a11e900-0000-4000-8000-000000000201" aria-label="Select to watch Trailer | Kite Weather View a promo of this release." tabindex="0" href="/eu/play/7a11e900-0000-4000-8000-000000000201"><div data-testid="set-item-tile"></div><div><span>Trailer</span></div></a>
+    </div>
+  </main>
+</body>
+</html>

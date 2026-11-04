@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Disney+ stand-in: search</title>
+<!-- A stand-in for Disney+'s search, made by hand, with what the app reads: the
+     search box, and each title's link, name, year and label. A live event's
+     id joins three, as Disney+'s do. Its titles are made up. -->
+<style>
+  body { margin: 0; background: #111; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  nav button { margin-left: auto; font: inherit; padding: 8px 16px; }
+  main { padding: 24px 48px; }
+  input { font: inherit; width: 296px; padding: 12px; }
+  .row { display: flex; gap: 24px; margin: 32px 0; }
+  .row a { display: block; width: 320px; color: #eee; text-decoration: none; }
+  [data-testid="set-item-tile"] { height: 180px; background: #345; }
+</style>
+<body>
+  <script>
+    // Signed in, as far as the stand-ins go: sign-in.html sends you on.
+    localStorage.setItem("stand-in-signed-in", "yes");
+  </script>
+  <nav>
+    <a href="/home" aria-label="Home">Home</a>
+    <a href="/eu/browse/search" aria-label="Search">Search</a>
+    <a href="/browse/movies" aria-label="Movies">Movies</a>
+    <a href="/browse/series" aria-label="Series">Series</a>
+    <button type="button" data-testid="dropdown-active-profile" aria-label="Sam's profile. Select this to change profiles." aria-expanded="false"><p>Sam</p></button>
+  </nav>
+  <main>
+    <input type="search" id="searchInput" autocomplete="off" placeholder="Search by title" aria-label="Search box">
+    <div class="row">
+      <a data-testid="set-item" data-item-id="5e1e5000-0000-4000-8000-000000000001" aria-label="Paper Boats Released 2019. Comedy, Animation genre. Select for details on this title." tabindex="0" href="/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001"><div data-testid="set-item-tile"></div><div><span>Paper Boats</span><div><span>2019</span></div></div></a>
+      <a data-testid="set-item" data-item-id="5e1e5000-0000-4000-8000-000000000003" aria-label="Paper Boats: The Movie Released 2027. Comedy, Animation genre. Select for details on this title." tabindex="0" href="/eu/browse/entity-5e1e5000-0000-4000-8000-000000000003"><div data-testid="set-item-tile"></div><div><span>Paper Boats: The Movie</span><div><span>2027</span></div></div></a>
+      <a data-testid="set-item" data-item-id="5e1e5000-0000-4000-8000-000000000005:live:1" aria-label="Paper Cup Final, live. Select for details on this event." tabindex="0" href="/eu/browse/entity-5e1e5000-0000-4000-8000-000000000005"><div data-testid="set-item-tile"></div><div><span>Paper Cup Final</span></div></a>
+      <a data-testid="set-item" data-item-id="5e1e5000-0000-4000-8000-000000000004" aria-label="Paper Lanterns Released 2024. Series. Drama genre. Select for details on this title." tabindex="0" href="/eu/browse/entity-5e1e5000-0000-4000-8000-000000000004"><div data-testid="set-item-tile"></div><div><span>Paper Lanterns</span><div><span>2024</span></div></div></a>
+    </div>
+  </main>
+</body>
+</html>
