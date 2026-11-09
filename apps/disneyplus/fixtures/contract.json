@@ -1,0 +1,501 @@
+{
+  "routes": [
+    {
+      "url": "https://www.disneyplus.com/",
+      "file": "pages/start.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/en-nl",
+      "file": "pages/signed-out.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/identity/login/enter-email",
+      "file": "pages/sign-in.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/eu/browse/search",
+      "file": "pages/search.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001",
+      "file": "pages/series.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/eu/browse/entity-f11f0000-0000-4000-8000-000000000002",
+      "file": "pages/film.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301?fixture=controls-gone",
+      "file": "pages/playing-controls-gone.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301?fixture=paused",
+      "file": "pages/playing.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301",
+      "file": "pages/playing.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000302",
+      "file": "pages/playing-next.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000303",
+      "file": "pages/playing-mouse.html"
+    },
+    {
+      "url": "https://www.disneyplus.com/eu/play/f11f0000-0000-4000-8000-000000000002",
+      "file": "pages/playing-film.html"
+    }
+  ],
+  "checks": [
+    {
+      "name": "launch takes its page to Disney+",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "launch",
+      "after": {
+        "url": "^https://www\\.disneyplus\\.com/$"
+      }
+    },
+    {
+      "name": "a page with the profile menu's button is signed in",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001",
+      "call": "signIn.isSignedIn",
+      "expect": true
+    },
+    {
+      "name": "the start page with Log In is signed out",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/en-nl",
+      "call": "signIn.isSignedIn",
+      "expect": false
+    },
+    {
+      "name": "the sign-in form is signed out",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/identity/login/enter-email",
+      "call": "signIn.isSignedIn",
+      "expect": false
+    },
+    {
+      "name": "the player is signed in",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/f11f0000-0000-4000-8000-000000000002",
+      "call": "signIn.isSignedIn",
+      "expect": true
+    },
+    {
+      "name": "a page that says neither isn't taken for signed out",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/",
+      "call": "signIn.isSignedIn",
+      "throws": "doesn't say yet whether you're signed in"
+    },
+    {
+      "name": "signIn.open takes its page to the form that asks for the email",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/en-nl",
+      "call": "signIn.open",
+      "after": {
+        "url": "/identity/login/enter-email$"
+      }
+    },
+    {
+      "name": "signIn.open doesn't wait for the form when Disney+ sends someone signed in on past it",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/entity-f11f0000-0000-4000-8000-000000000002",
+      "call": "signIn.open",
+      "after": {
+        "url": "/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001$"
+      }
+    },
+    {
+      "name": "search finds the titles Disney+ shows for what was typed, without live events",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001",
+      "call": "search",
+      "args": [
+        "paper"
+      ],
+      "expect": [
+        {
+          "id": "5e1e5000-0000-4000-8000-000000000001",
+          "kind": "film",
+          "title": "Paper Boats",
+          "subtitle": "2019"
+        },
+        {
+          "id": "5e1e5000-0000-4000-8000-000000000003",
+          "kind": "film",
+          "title": "Paper Boats: The Movie",
+          "subtitle": "2027"
+        },
+        {
+          "title": "Paper Lanterns",
+          "kind": "series",
+          "subtitle": "2024"
+        }
+      ],
+      "after": {
+        "url": "/eu/browse/search$"
+      }
+    },
+    {
+      "name": "open() reaches a known episode from the series' own page",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "5e1e5000-0000-4000-8000-000000000001",
+          "kind": "episode",
+          "title": "Paper Boats",
+          "season": 3,
+          "episode": 1
+        }
+      ],
+      "after": {
+        "url": "/eu/play/e9150de0-0000-4000-8000-000000000301$"
+      }
+    },
+    {
+      "name": "open() finds an episode from the box's history by its series' name",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/entity-f11f0000-0000-4000-8000-000000000002",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "ledger:7",
+          "kind": "episode",
+          "title": "paper boats",
+          "season": 3,
+          "episode": 2
+        }
+      ],
+      "after": {
+        "url": "/eu/play/e9150de0-0000-4000-8000-000000000302$"
+      },
+      "asks": [
+        {
+          "url": "/eu/browse/search$"
+        },
+        {
+          "url": "/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001$"
+        }
+      ]
+    },
+    {
+      "name": "open() plays a film from its page's play button, not its trailer",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "f11f0000-0000-4000-8000-000000000002",
+          "kind": "film",
+          "title": "Kite Weather"
+        }
+      ],
+      "after": {
+        "url": "/eu/play/f11f0000-0000-4000-8000-000000000002$"
+      }
+    },
+    {
+      "name": "open() says when the episode's season isn't the one the page shows",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "5e1e5000-0000-4000-8000-000000000001",
+          "kind": "episode",
+          "title": "Paper Boats",
+          "season": 1,
+          "episode": 5
+        }
+      ],
+      "throws": "Disney\\+ shows Season 3 first, and picking Season 1 isn't written yet"
+    },
+    {
+      "name": "open() says when there's nothing by that name",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "ledger:8",
+          "kind": "film",
+          "title": "Paper"
+        }
+      ],
+      "throws": "Disney\\+ has nothing called Paper"
+    },
+    {
+      "name": "readPlaybackState reads the title, season, episode and position off the player's controls",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301",
+      "call": "playback.readPlaybackState",
+      "expect": {
+        "title": "Paper Boats",
+        "season": 3,
+        "episode": 1,
+        "position": 9,
+        "duration": 494,
+        "playing": true
+      }
+    },
+    {
+      "name": "with the controls gone again, it keeps what it read and goes by the video's clock",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301?fixture=controls-gone",
+      "call": "playback.readPlaybackState",
+      "expect": {
+        "title": "Paper Boats",
+        "season": 3,
+        "episode": 1,
+        "position": 9,
+        "duration": 494,
+        "playing": true
+      }
+    },
+    {
+      "name": "it shows the controls with a mouse move over the picture when they're hidden",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000303",
+      "call": "playback.readPlaybackState",
+      "expect": {
+        "title": "Paper Boats",
+        "season": 3,
+        "episode": 3,
+        "position": 120,
+        "duration": 501,
+        "playing": true
+      }
+    },
+    {
+      "name": "a film has a title and no season or episode",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/f11f0000-0000-4000-8000-000000000002",
+      "call": "playback.readPlaybackState",
+      "expect": {
+        "title": "Kite Weather",
+        "position": 2,
+        "duration": 6710,
+        "playing": true
+      }
+    },
+    {
+      "name": "with the controls gone and nothing read before, it says so rather than guess",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000302",
+      "call": "playback.readPlaybackState",
+      "throws": "Disney\\+'s player didn't show what's playing"
+    },
+    {
+      "name": "off the player, nothing is playing",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001",
+      "call": "playback.readPlaybackState",
+      "expect": null
+    },
+    {
+      "name": "next presses the controls' PLAY NEXT, and waits for the next episode",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301",
+      "call": "playback.next",
+      "after": {
+        "url": "/eu/play/e9150de0-0000-4000-8000-000000000302$"
+      }
+    },
+    {
+      "name": "a film has no next episode",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/f11f0000-0000-4000-8000-000000000002",
+      "call": "playback.next",
+      "throws": "Disney\\+ offers no next episode here"
+    },
+    {
+      "name": "next off the player says nothing is playing",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "playback.next",
+      "throws": "nothing is playing on Disney\\+"
+    },
+    {
+      "name": "the d-pad: down from search's box goes to the first title it found",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "search",
+      "args": [
+        "paper"
+      ],
+      "remote": [
+        "down"
+      ],
+      "after": {
+        "focused": "^Paper Boats Released 2019"
+      }
+    },
+    {
+      "name": "the d-pad: right moves along the row",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "search",
+      "args": [
+        "paper"
+      ],
+      "remote": [
+        "down",
+        "right"
+      ],
+      "after": {
+        "focused": "^Paper Boats: The Movie"
+      }
+    },
+    {
+      "name": "the d-pad: OK opens the title the ring is on",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "search",
+      "args": [
+        "paper"
+      ],
+      "remote": [
+        "down",
+        "enter"
+      ],
+      "after": {
+        "url": "/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001$"
+      }
+    },
+    {
+      "name": "the d-pad: Back goes back a page",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "search",
+      "args": [
+        "paper"
+      ],
+      "remote": [
+        "down",
+        "enter",
+        "back"
+      ],
+      "after": {
+        "url": "/eu/browse/search$"
+      }
+    },
+    {
+      "name": "the d-pad: up from the titles reaches the links along the top, through the search box",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "search",
+      "args": [
+        "paper"
+      ],
+      "remote": [
+        "down",
+        "up",
+        "up",
+        "up"
+      ],
+      "after": {
+        "focused": "^Search$"
+      }
+    },
+    {
+      "name": "the d-pad: on a series' page it reaches the episodes, and OK plays the one the ring is on",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001",
+      "remote": [
+        "down",
+        "down",
+        "left",
+        "left",
+        "enter"
+      ],
+      "after": {
+        "url": "/eu/play/e9150de0-0000-4000-8000-000000000301$"
+      }
+    },
+    {
+      "name": "the d-pad: up from the episodes reaches the play button, then the links along the top",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001",
+      "remote": [
+        "down",
+        "down",
+        "left",
+        "left",
+        "up",
+        "up"
+      ],
+      "after": {
+        "focused": "^Home$"
+      }
+    },
+    {
+      "name": "the d-pad: Back from the player goes back to the series' page",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001",
+      "remote": [
+        "down",
+        "down",
+        "left",
+        "left",
+        "enter",
+        "back"
+      ],
+      "after": {
+        "url": "/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001$"
+      }
+    },
+    {
+      "name": "pause presses the player's own pause, and waits until the video stops",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301",
+      "call": "playback.pause"
+    },
+    {
+      "name": "pause leaves a paused video as it is",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301?fixture=paused",
+      "call": "playback.pause"
+    },
+    {
+      "name": "resume presses the player's own play, and waits until the video plays",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301?fixture=paused",
+      "call": "playback.resume"
+    },
+    {
+      "name": "resume leaves a playing video as it is",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301",
+      "call": "playback.resume"
+    },
+    {
+      "name": "pause shows the controls with a mouse move first when they're hidden",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000303",
+      "call": "playback.pause"
+    },
+    {
+      "name": "pause says so when the controls don't show",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301?fixture=controls-gone",
+      "call": "playback.pause",
+      "throws": "Disney\\+'s player didn't show its play and pause"
+    },
+    {
+      "name": "resume off the player says nothing is playing",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "playback.resume",
+      "throws": "nothing is playing on Disney\\+"
+    }
+  ]
+}
