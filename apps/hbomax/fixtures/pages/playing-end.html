@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>HBO Max stand-in: Lantern Bay playing</title>
+<!-- A stand-in for HBO Max's player, made by hand. Its controls stay in the
+     page while they're hidden, as HBO Max's do: the title, "S1 E3:", play
+     and pause (twice, one of them not drawn), and the timeline. It's near the end, so Next Episode is there too.
+     At ?fixture=paused the video starts paused, and at ?fixture=loading the
+     controls haven't been drawn yet. -->
+<style>
+  body { margin: 0; background: #000; color: #eee; font: 24px sans-serif; }
+  [data-testid="playerContainer"] { position: fixed; inset: 0; }
+  video { width: 100%; height: 100%; }
+  [data-testid="playback_controls"] { position: absolute; inset: auto 48px 48px 48px; display: flex; gap: 24px; align-items: center; }
+  button { font: inherit; min-width: 64px; height: 64px; }
+</style>
+<body>
+  <div data-testid="playerContainer">
+    <video data-testid="VideoElement" muted playsinline></video>
+  </div>
+  <script>
+    // The video has no picture, so it has no clock of its own either. It
+    // plays and pauses like any other, and its clock says 1395.2 s.
+    const shown = {"title": "Lantern Bay", "numbers": "S1 E3:", "subtitle": "The Storm", "max": "1402.60", "time": 1395.2, "next": "/video/watch/e9150de0-0000-4000-8000-000000000201"};
+    const video = document.querySelector("video");
+    video.title = shown.title;
+    Object.defineProperty(video, "currentTime", { get: () => shown.time });
+    if (!location.search.includes("paused")) video.play().catch(() => {});
+    if (!location.search.includes("loading")) {
+      const controls = document.createElement("div");
+      controls.dataset.testid = "playback_controls";
+      controls.innerHTML =
+        '<button type="button" data-testid="player-ux-back-button" aria-label="Exit Playback"></button>' +
+        '<button type="button" data-testid="player-ux-play-pause-button" style="display: none"></button>' +
+        '<button type="button" data-testid="player-ux-play-pause-button"></button>' +
+        '<div data-testid="content-metadata"><span data-testid="player-ux-asset-title"></span> <span data-testid="player-ux-season-episode"></span> <span data-testid="player-ux-asset-subtitle"></span></div>' +
+        '<input type="range" step="0.1" data-testid="player-ux-scrubber-position" aria-valuemin="0.0">';
+      controls.querySelector('[data-testid="player-ux-asset-title"]').textContent = shown.title;
+      controls.querySelector('[data-testid="player-ux-season-episode"]').textContent = shown.numbers;
+      controls.querySelector('[data-testid="player-ux-asset-subtitle"]').textContent = shown.subtitle;
+      controls.querySelector('[data-testid="player-ux-scrubber-position"]').setAttribute("aria-valuemax", shown.max);
+      controls.querySelector('[data-testid="player-ux-back-button"]').addEventListener("click", () => history.back());
+      const toggles = controls.querySelectorAll('[data-testid="player-ux-play-pause-button"]');
+      const label = () => toggles.forEach((button) => button.setAttribute("aria-label", video.paused ? "Play" : "Pause"));
+      for (const button of toggles) button.addEventListener("click", () => (video.paused ? video.play().catch(() => {}) : video.pause()));
+      label();
+      video.addEventListener("play", label);
+      video.addEventListener("pause", label);
+      if (shown.next) {
+        const next = document.createElement("button");
+        next.type = "button";
+        next.dataset.testid = "player-ux-up-next-button";
+        next.setAttribute("aria-label", "Play next episode, Autoplay is off");
+        next.textContent = "Next Episode";
+        next.addEventListener("click", () => location.assign(shown.next));
+        controls.append(next);
+      }
+      document.querySelector('[data-testid="playerContainer"]').append(controls);
+    }
+  </script>
+</body>
+</html>

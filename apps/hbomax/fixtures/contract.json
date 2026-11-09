@@ -1,0 +1,481 @@
+{
+  "routes": [
+    {
+      "url": "https://www.hbomax.com/",
+      "file": "pages/start.html"
+    },
+    {
+      "url": "https://www.hbomax.com/nl/en",
+      "file": "pages/signed-out.html"
+    },
+    {
+      "url": "https://www.hbomax.com/auth/login",
+      "file": "pages/sign-in.html"
+    },
+    {
+      "url": "https://www.hbomax.com/profile-picker",
+      "file": "pages/profile-picker.html"
+    },
+    {
+      "url": "https://www.hbomax.com/search",
+      "file": "pages/search.html"
+    },
+    {
+      "url": "https://www.hbomax.com/show/1a7e0000-0000-4000-8000-000000000001?season=1",
+      "file": "pages/series-season.html"
+    },
+    {
+      "url": "https://www.hbomax.com/show/1a7e0000-0000-4000-8000-000000000001",
+      "file": "pages/series.html"
+    },
+    {
+      "url": "https://www.hbomax.com/movie/f17a0000-0000-4000-8000-000000000002",
+      "file": "pages/film.html"
+    },
+    {
+      "url": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102",
+      "file": "pages/playing.html"
+    },
+    {
+      "url": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000103",
+      "file": "pages/playing-end.html"
+    },
+    {
+      "url": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000201",
+      "file": "pages/playing.html"
+    },
+    {
+      "url": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000203",
+      "file": "pages/playing.html"
+    },
+    {
+      "url": "https://www.hbomax.com/video/watch/f17a0000-0000-4000-8000-000000000102",
+      "file": "pages/playing-film.html"
+    }
+  ],
+  "checks": [
+    {
+      "name": "launch takes its page to HBO Max",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "launch",
+      "after": {
+        "url": "^https://www\\.hbomax\\.com/$"
+      }
+    },
+    {
+      "name": "a page with the profile button is signed in",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/show/1a7e0000-0000-4000-8000-000000000001",
+      "call": "signIn.isSignedIn",
+      "expect": true
+    },
+    {
+      "name": "the profile picker is signed in",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/profile-picker",
+      "call": "signIn.isSignedIn",
+      "expect": true
+    },
+    {
+      "name": "the start page with Sign In is signed out",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/nl/en",
+      "call": "signIn.isSignedIn",
+      "expect": false
+    },
+    {
+      "name": "the sign-in form is signed out",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/auth/login",
+      "call": "signIn.isSignedIn",
+      "expect": false
+    },
+    {
+      "name": "the player is signed in",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/f17a0000-0000-4000-8000-000000000102",
+      "call": "signIn.isSignedIn",
+      "expect": true
+    },
+    {
+      "name": "a page that says neither isn't taken for signed out",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/",
+      "call": "signIn.isSignedIn",
+      "throws": "doesn't say yet whether you're signed in"
+    },
+    {
+      "name": "signIn.open takes its page to the form that asks for the email, inside its shadow roots",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/nl/en",
+      "call": "signIn.open",
+      "after": {
+        "url": "/auth/login$"
+      }
+    },
+    {
+      "name": "search finds the shows and films HBO Max shows for what was typed, without sports or clips",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/show/1a7e0000-0000-4000-8000-000000000001",
+      "call": "search",
+      "args": [
+        "lantern"
+      ],
+      "expect": [
+        {
+          "id": "show/1a7e0000-0000-4000-8000-000000000001",
+          "kind": "series",
+          "title": "Lantern Bay"
+        },
+        {
+          "id": "movie/f17a0000-0000-4000-8000-000000000002",
+          "kind": "film",
+          "title": "Lantern Bay: The Movie",
+          "subtitle": "2026"
+        },
+        {
+          "id": "standalone/5da10000-0000-4000-8000-000000000005",
+          "kind": "film",
+          "title": "Lanterns",
+          "subtitle": "2019"
+        }
+      ],
+      "after": {
+        "url": "/search$"
+      }
+    },
+    {
+      "name": "search finds no more than that",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "search",
+      "args": [
+        "lantern"
+      ],
+      "expect": {
+        "$length": 3
+      }
+    },
+    {
+      "name": "open() reaches an episode at the season the page shows",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "show/1a7e0000-0000-4000-8000-000000000001",
+          "kind": "episode",
+          "title": "Lantern Bay",
+          "season": 2,
+          "episode": 1
+        }
+      ],
+      "after": {
+        "url": "/video/watch/e9150de0-0000-4000-8000-000000000201$"
+      }
+    },
+    {
+      "name": "open() picks another season by the show's address",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "show/1a7e0000-0000-4000-8000-000000000001",
+          "kind": "episode",
+          "title": "Lantern Bay",
+          "season": 1,
+          "episode": 2
+        }
+      ],
+      "after": {
+        "url": "/video/watch/e9150de0-0000-4000-8000-000000000102$"
+      },
+      "asks": [
+        {
+          "url": "/show/1a7e0000-0000-4000-8000-000000000001\\?season=1$"
+        }
+      ]
+    },
+    {
+      "name": "open() finds an episode from the box's history by its show's name",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/movie/f17a0000-0000-4000-8000-000000000002",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "ledger:7",
+          "kind": "episode",
+          "title": "lantern bay",
+          "season": 1,
+          "episode": 3
+        }
+      ],
+      "after": {
+        "url": "/video/watch/e9150de0-0000-4000-8000-000000000103$"
+      },
+      "asks": [
+        {
+          "url": "/search$"
+        }
+      ]
+    },
+    {
+      "name": "open() plays a film from its page's play button, not its trailer",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "movie/f17a0000-0000-4000-8000-000000000002",
+          "kind": "film",
+          "title": "Lantern Bay: The Movie"
+        }
+      ],
+      "after": {
+        "url": "/video/watch/f17a0000-0000-4000-8000-000000000102$"
+      }
+    },
+    {
+      "name": "open() with no episode plays the show's own play button",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "show/1a7e0000-0000-4000-8000-000000000001",
+          "kind": "series",
+          "title": "Lantern Bay"
+        }
+      ],
+      "after": {
+        "url": "/video/watch/e9150de0-0000-4000-8000-000000000203$"
+      }
+    },
+    {
+      "name": "open() says when the season hasn't that episode",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "show/1a7e0000-0000-4000-8000-000000000001",
+          "kind": "episode",
+          "title": "Lantern Bay",
+          "season": 1,
+          "episode": 9
+        }
+      ],
+      "throws": "Lantern Bay: Season 1 Episode 9 isn't on its page"
+    },
+    {
+      "name": "open() says when there's nothing by that name",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "ledger:8",
+          "kind": "film",
+          "title": "Lantern"
+        }
+      ],
+      "throws": "HBO Max has nothing called Lantern"
+    },
+    {
+      "name": "readPlaybackState reads the title, season and episode off the hidden controls, and the position off the video's clock",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102",
+      "call": "playback.readPlaybackState",
+      "expect": {
+        "title": "Lantern Bay",
+        "season": 1,
+        "episode": 2,
+        "position": 40.3,
+        "duration": 1397.4,
+        "playing": true
+      }
+    },
+    {
+      "name": "a paused video isn't playing",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102?fixture=paused",
+      "call": "playback.readPlaybackState",
+      "expect": {
+        "title": "Lantern Bay",
+        "season": 1,
+        "episode": 2,
+        "playing": false
+      }
+    },
+    {
+      "name": "a film has a title and no season or episode",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/f17a0000-0000-4000-8000-000000000102",
+      "call": "playback.readPlaybackState",
+      "expect": {
+        "title": "Lantern Bay: The Movie",
+        "position": 1774.7,
+        "duration": 6710,
+        "playing": true
+      }
+    },
+    {
+      "name": "before the controls are drawn, it says so rather than guess",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102?fixture=loading",
+      "call": "playback.readPlaybackState",
+      "throws": "HBO Max's player doesn't say what's playing"
+    },
+    {
+      "name": "off the player, nothing is playing",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/show/1a7e0000-0000-4000-8000-000000000001",
+      "call": "playback.readPlaybackState",
+      "expect": null
+    },
+    {
+      "name": "next presses Next Episode near the end, and waits for it",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000103",
+      "call": "playback.next",
+      "after": {
+        "url": "/video/watch/e9150de0-0000-4000-8000-000000000201$"
+      }
+    },
+    {
+      "name": "before the end there's no next episode yet",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102",
+      "call": "playback.next",
+      "throws": "HBO Max offers no next episode here"
+    },
+    {
+      "name": "next off the player says nothing is playing",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "playback.next",
+      "throws": "nothing is playing on HBO Max"
+    },
+    {
+      "name": "pause presses the player's own pause, and waits until the video stops",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102",
+      "call": "playback.pause"
+    },
+    {
+      "name": "pause leaves a paused video as it is",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102?fixture=paused",
+      "call": "playback.pause"
+    },
+    {
+      "name": "resume presses the player's own play, and waits until the video plays",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102?fixture=paused",
+      "call": "playback.resume"
+    },
+    {
+      "name": "resume leaves a playing video as it is",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102",
+      "call": "playback.resume"
+    },
+    {
+      "name": "pause says so before the controls are drawn",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102?fixture=loading",
+      "call": "playback.pause",
+      "throws": "HBO Max's player has no play and pause"
+    },
+    {
+      "name": "resume off the player says nothing is playing",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "playback.resume",
+      "throws": "nothing is playing on HBO Max"
+    },
+    {
+      "name": "the d-pad: down from search's box goes to the first title it found",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "search",
+      "args": [
+        "lantern"
+      ],
+      "remote": [
+        "down"
+      ],
+      "after": {
+        "focused": "^Lantern Bay\\. Row 1"
+      }
+    },
+    {
+      "name": "the d-pad: right moves along the row",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "search",
+      "args": [
+        "lantern"
+      ],
+      "remote": [
+        "down",
+        "right"
+      ],
+      "after": {
+        "focused": "^Lantern Bay: The Movie\\. Row 1"
+      }
+    },
+    {
+      "name": "the d-pad: OK opens the title the ring is on",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "search",
+      "args": [
+        "lantern"
+      ],
+      "remote": [
+        "down",
+        "enter"
+      ],
+      "after": {
+        "url": "/show/1a7e0000-0000-4000-8000-000000000001$"
+      }
+    },
+    {
+      "name": "the d-pad: Back goes back a page",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "search",
+      "args": [
+        "lantern"
+      ],
+      "remote": [
+        "down",
+        "enter",
+        "back"
+      ],
+      "after": {
+        "url": "/search$"
+      }
+    },
+    {
+      "name": "the d-pad: up from the titles reaches the links along the top, through the search box",
+      "id": "T9.1",
+      "page": "https://www.hbomax.com/search",
+      "call": "search",
+      "args": [
+        "lantern"
+      ],
+      "remote": [
+        "down",
+        "up",
+        "up"
+      ],
+      "after": {
+        "focused": "^Search$"
+      }
+    }
+  ]
+}

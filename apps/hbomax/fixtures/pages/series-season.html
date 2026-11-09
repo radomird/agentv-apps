@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>HBO Max stand-in: a show, season 1</title>
+<!-- A stand-in for a show's page on HBO Max, made by hand, at season 1:
+     its play button and trailer button, the season picker, and the season's
+     episodes, each a link labelled the way HBO Max labels them. Bidi marks
+     wrap the names, as on HBO Max. The show is made up. -->
+<style>
+  body { margin: 0; background: #000; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  nav button { margin-left: auto; font: inherit; padding: 8px 16px; }
+  section { padding: 24px 48px; }
+  section button { font: inherit; padding: 12px 24px; margin-right: 16px; }
+  .row { display: flex; gap: 24px; margin: 32px 0; }
+  .row a { display: block; width: 320px; color: #eee; text-decoration: none; }
+  .row a > div { height: 180px; background: #324; }
+</style>
+<body>
+  <nav data-testid="navigationMenu">
+    <a href="/" aria-label="Home">Home</a>
+    <a href="/search" data-testid="search_button" aria-label="Search">Search</a>
+    <button type="button" data-testid="profile_button" aria-label="Profile">Adult</button>
+  </nav>
+  <section data-testid="details-hero-container">
+    <h1>Lantern Bay</h1>
+    <button type="button" data-testid="play_button" aria-label="&#x2066;&#x2068;Resume Lantern Bay Season 2, Episode 3: The Tide Table, 12 minutes remaining&#x2069;&#x2069;" onclick="location.assign('/video/watch/e9150de0-0000-4000-8000-000000000203')">Resume S2 E3</button>
+    <button type="button" data-testid="play_button" aria-label="&#x2066;&#x2068;Watch trailer for Lantern Bay&#x2069;&#x2069;" onclick="location.assign('/video/watch/7a11e000-0000-4000-8000-000000000009')">Trailer</button>
+  </section>
+  <section>
+    <div data-testid="generic-show-page-rail-episodes-tabbed-content_dropdown"><button type="button" aria-haspopup="true" aria-expanded="false"><span>Season 1</span></button></div>
+    <div class="row" data-testid="generic-show-page-rail-episodes-tabbed-content_rail">
+      <a data-testid="e9150de0-0000-4000-8000-000000000101_tile" data-sonic-type="video" aria-label="&#x2066;&#x2068;Watch &#x2068;Season 1, Episode 1: &#x2068;The Harbour&#x2069;&#x2069;&#x2069;. &#x2068;1 of 3&#x2069;" href="/video/watch/e9150de0-0000-4000-8000-000000000101"><div aria-hidden="true"></div><p>1. The Harbour</p></a>
+      <a data-testid="e9150de0-0000-4000-8000-000000000102_tile" data-sonic-type="video" aria-label="&#x2066;&#x2068;Watch &#x2068;Season 1, Episode 2: &#x2068;The Nets&#x2069;&#x2069;&#x2069;. &#x2068;2 of 3&#x2069;" href="/video/watch/e9150de0-0000-4000-8000-000000000102"><div aria-hidden="true"></div><p>2. The Nets</p></a>
+      <a data-testid="e9150de0-0000-4000-8000-000000000103_tile" data-sonic-type="video" aria-label="&#x2066;&#x2068;Watch &#x2068;Season 1, Episode 3: &#x2068;The Storm&#x2069;&#x2069;&#x2069;. &#x2068;3 of 3&#x2069;" href="/video/watch/e9150de0-0000-4000-8000-000000000103"><div aria-hidden="true"></div><p>3. The Storm</p></a>
+    </div>
+  </section>
+</body>
+</html>
