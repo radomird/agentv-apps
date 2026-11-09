@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Prime Video stand-in: a series, season 2</title>
+<!-- A stand-in for a series' page on Prime Video, made by hand, at season
+     2: its play button, the season list linking to each season's own
+     page, and the season's episodes, each with its play link. The series is
+     made up. -->
+<style>
+  body { margin: 0; background: #0f171e; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  main { padding: 24px 48px; }
+  .row { display: flex; gap: 24px; margin: 32px 0; }
+  article a { display: block; width: 320px; height: 180px; color: #eee; background: #234; }
+  li { list-style: none; margin: 16px 0; }
+  li a { color: #eee; }
+</style>
+<body>
+  <nav>
+    <a href="/region/eu/storefront" data-testid="pv-nav-home-home">Home</a>
+    <a href="/region/eu/storefront/movie" aria-label="Movies">Movies</a>
+    <a href="/region/eu/storefront/tv" aria-label="TV shows">TV shows</a>
+    <a href="/region/eu/signout" data-testid="pv-nav-sign-out">Sign Out</a>
+  </nav>
+  <main>
+    <h1>Lantern Bay</h1>
+    <a data-testid="dp-atf-play-button" role="button" href="/region/eu/detail/0LBS2E1000000000000000201?autoplay=1&amp;t=99&amp;ref_=atv_dp_atf_resume">Resume S2 E1</a>
+    <div data-testid="dp-season-selector">
+      <a href="/region/eu/detail/0LANTERNBAYS1000000000001?ref_=atv_dp_season_select_s1">Season 1</a>
+      <a href="/region/eu/detail/0LANTERNBAYS2000000000001?ref_=atv_dp_season_select_s2">Season 2</a>
+    </div>
+    <ul>
+      <li data-testid="episode-list-item"><h3><span>1. The Ferry</span></h3><a data-testid="episodes-playbutton" aria-label="Included with Prime, Play" href="/region/eu/detail/0LBS2E1000000000000000201?autoplay=1&amp;t=0&amp;ref_=atv_dp_btf_el">Play</a></li>
+      <li data-testid="episode-list-item"><h3><span>2. The Lighthouse</span></h3><a data-testid="episodes-playbutton" aria-label="Included with Prime, Play" href="/region/eu/detail/0LBS2E2000000000000000202?autoplay=1&amp;t=0&amp;ref_=atv_dp_btf_el">Play</a></li>
+    </ul>
+  </main>
+</body>
+</html>

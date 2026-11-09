@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Prime Video stand-in: Lantern Bay playing</title>
+<!-- A stand-in for Prime Video's player open over a title's page, made by
+     hand. The titles are made up. -->
+<style>
+  body { margin: 0; background: #0f171e; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  main { padding: 24px 48px; }
+  .row { display: flex; gap: 24px; margin: 32px 0; }
+  article a { display: block; width: 320px; height: 180px; color: #eee; background: #234; }
+  li { list-style: none; margin: 16px 0; }
+  li a { color: #eee; }
+</style>
+<body>
+  <nav>
+    <a href="/region/eu/storefront" data-testid="pv-nav-home-home">Home</a>
+    <a href="/region/eu/storefront/movie" aria-label="Movies">Movies</a>
+    <a href="/region/eu/storefront/tv" aria-label="TV shows">TV shows</a>
+    <a href="/region/eu/signout" data-testid="pv-nav-sign-out">Sign Out</a>
+  </nav>
+  <div id="dv-web-player"><div class="atvwebplayersdk-player-container"><div class="atvwebplayersdk-video-surface" style="position: fixed; inset: 0"></div></div></div>
+  <script>
+    // The player over the title's page. Its videos have no picture, so the
+    // stand-in gives each a clock and a length: first a short one, as an
+    // episode can start with, then the programme. Its controls are drawn only
+    // after a pointer move over the picture, as Prime Video's are. At
+    // &fixture=paused the programme starts paused.
+    const shown = {"title": "Lantern Bay", "info": "S1 E2 THE NETS", "time": 1098.84, "duration": 3203, "next": "/region/eu/detail/0LBS2E1000000000000000201?autoplay=1&t=0"};
+    const surface = document.querySelector(".atvwebplayersdk-video-surface");
+    const make = (time, duration) => {
+      const video = document.createElement("video");
+      video.muted = true;
+      video.style.cssText = "width: 100%; height: 100%";
+      Object.defineProperty(video, "currentTime", { get: () => time });
+      Object.defineProperty(video, "duration", { get: () => duration });
+      surface.append(video);
+      return video;
+    };
+    make(1.8, 66.5);
+    const video = make(shown.time, shown.duration);
+    if (!location.search.includes("fixture=paused")) video.play().catch(() => {});
+    surface.addEventListener("pointermove", () => {
+      if (document.querySelector("#atvwebplayersdk-play-pause-button")) return;
+      const controls = document.createElement("div");
+      controls.style.cssText = "position: fixed; inset: auto 48px 48px 48px; display: flex; gap: 24px";
+      controls.innerHTML =
+        '<button id="atvwebplayersdk-close-player-button" aria-label="Close player"></button>' +
+        '<div class="atvwebplayersdk-title-text"></div><span class="atvwebplayersdk-episode-info"></span>' +
+        '<button id="atvwebplayersdk-play-pause-button"></button>';
+      controls.querySelector(".atvwebplayersdk-title-text").textContent = shown.title;
+      controls.querySelector(".atvwebplayersdk-episode-info").textContent = shown.info;
+      const toggle = controls.querySelector("#atvwebplayersdk-play-pause-button");
+      const label = () => toggle.setAttribute("aria-label", video.paused ? "Play" : "Pause");
+      label();
+      video.addEventListener("play", label);
+      video.addEventListener("pause", label);
+      toggle.addEventListener("click", () => (video.paused ? video.play().catch(() => {}) : video.pause()));
+      if (shown.next) {
+        const next = document.createElement("button");
+        next.id = "atvwebplayersdk-next-episode-button";
+        next.setAttribute("aria-label", "Next Episode");
+        next.addEventListener("click", () => location.assign(shown.next));
+        controls.append(next);
+      }
+      document.body.append(controls);
+    });
+  </script>
+</body>
+</html>

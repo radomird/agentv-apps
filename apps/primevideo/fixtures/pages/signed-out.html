@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Prime Video stand-in: signed out</title>
+<!-- A stand-in for Prime Video's start page when you're signed out, made by
+     hand, with its Sign In link. Prime Video's goes on to Amazon's sign-in
+     page; this one goes to a stand-in for that. -->
+<style>
+  body { margin: 0; background: #0f171e; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  main { padding: 24px 48px; }
+  .row { display: flex; gap: 24px; margin: 32px 0; }
+  article a { display: block; width: 320px; height: 180px; color: #eee; background: #234; }
+  li { list-style: none; margin: 16px 0; }
+  li a { color: #eee; }
+</style>
+<body>
+  <nav>
+    <a href="/" aria-label="Start">Start</a>
+    <a href="/auth-redirect/stand-in" data-testid="pv-nav-sign-in" aria-label="Sign In">Sign In</a>
+  </nav>
+</body>
+</html>

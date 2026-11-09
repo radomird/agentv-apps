@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Prime Video stand-in: search</title>
+<!-- A stand-in for Prime Video's search results, made by hand. Prime
+     Video's results page wasn't captured, so these are drawn the way its
+     storefront draws cards: data-card-title, data-card-entity-type and a
+     link to the title's page. The titles are made up. -->
+<style>
+  body { margin: 0; background: #0f171e; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  main { padding: 24px 48px; }
+  .row { display: flex; gap: 24px; margin: 32px 0; }
+  article a { display: block; width: 320px; height: 180px; color: #eee; background: #234; }
+  li { list-style: none; margin: 16px 0; }
+  li a { color: #eee; }
+</style>
+<body>
+  <nav>
+    <a href="/region/eu/storefront" data-testid="pv-nav-home-home">Home</a>
+    <a href="/region/eu/storefront/movie" aria-label="Movies">Movies</a>
+    <a href="/region/eu/storefront/tv" aria-label="TV shows">TV shows</a>
+    <a href="/region/eu/signout" data-testid="pv-nav-sign-out">Sign Out</a>
+  </nav>
+  <main>
+    <form action="/region/eu/search" method="GET"><input type="search" id="pv-search-nav" name="phrase" placeholder="Search"></form>
+    <div class="row">
+      <article data-testid="card" data-card-title="Lantern Bay - Season 1" data-card-entity-type="TV Show" data-card-entitlement="Entitled"><a href="/region/eu/detail/0LANTERNBAYS1000000000001?ref_=atv_sr_c_0">Lantern Bay</a></article>
+      <article data-testid="card" data-card-title="Lantern Bay: The Movie" data-card-entity-type="Movie" data-card-entitlement="Entitled"><a href="/region/eu/detail/0LANTERNMOVIE00000000002?ref_=atv_sr_c_1">Lantern Bay: The Movie</a></article>
+      <article data-testid="card" data-card-title="Lanterns" data-card-entity-type="Movie" data-card-entitlement="Entitled"><a href="/region/eu/detail/0LANTERNS000000000000003?ref_=atv_sr_c_2">Lanterns</a></article>
+      <article data-testid="card" data-card-title="Lantern Bay - Season 1" data-card-entity-type="TV Show"><a href="/region/eu/detail/0LANTERNBAYS1000000000001?ref_=atv_sr_c_9">Lantern Bay</a></article>
+    </div>
+  </main>
+</body>
+</html>

@@ -119,9 +119,9 @@ async function press(want: string): Promise<string | null> {
 }
 
 // Whether the page says you're signed in, once its menu is drawn. Null after
-// 10 s.
+// 3 s.
 async function signedIn(): Promise<boolean | null> {
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 30; i++) {
     if (document.querySelector('[data-testid="pv-nav-sign-out"]')) return true;
     if (document.querySelector('[data-testid="pv-nav-sign-in"]')) return false;
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -186,11 +186,15 @@ const app: TvApp = {
       return said;
     },
     // Prime Video's own Sign In, which goes on to Amazon's sign-in page for
-    // the phone to fill. Someone signed in already stays where they are.
+    // the phone to fill: on this page, or on the start page when this one
+    // doesn't say. Someone signed in already stays where they are.
     async open(ctx) {
       const p = page(ctx);
-      await p.goto(HOME);
-      const said = await p.evaluate(signedIn);
+      let said = here(p).origin === ORIGIN ? await p.evaluate(signedIn) : null;
+      if (said === null) {
+        await p.goto(HOME);
+        said = await p.evaluate(signedIn);
+      }
       if (said === null) throw new Error("Prime Video's page didn't show Sign In");
       if (!said) await p.click('[data-testid="pv-nav-sign-in"]');
     },
