@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "agentv.primevideo",
+  "name": "Prime Video",
+  "version": "1.0.0",
+  "author": "agentv",
+  "license": "MIT",
+  "description": "Prime Video on the TV. On Linux, Prime Video plays in SD.",
+  "kinds": ["tv-app"],
+  "entryPoints": { "tvApp": "app.ts" },
+  "tv": {
+    "contract": 1,
+    "category": "streaming",
+    "runtime": "web",
+    "homeUrl": "https://www.primevideo.com/",
+    "capabilities": ["launch", "signIn", "search", "playback"],
+    "setup": [{ "type": "signIn" }],
+    "origins": ["https://www.primevideo.com"],
+    "tiles": { "s": "logo", "m": "continue" },
+    "childSafe": false
+  }
+}
