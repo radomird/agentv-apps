@@ -8,7 +8,7 @@ If you run AgenTV, this is where the apps in _Apps_ on your TV come from. If you
 
 Right now there are five:
 
-- **Disney+.** Disney+'s own site on the TV. You sign in from your phone, with its password manager. Then you can search, ask for something by name, and pick up where you left off from its tile. Your phone's arrows get you around Disney+'s pages. Profiles for children are coming soon.
+- **Disney+.** Disney+'s own site on the TV. You sign in from your phone, with its password manager. Then you can search, ask for something by name, and pick up where you left off from its tile. Your phone's arrows get you around Disney+'s pages. It opens on whichever Disney+ profile you're signed in to.
 - **Jellyfin.** Your Jellyfin films and shows on the TV. Search, open something, and pick up where you left off.
 - **Immich.** Your Immich photos on the TV. Search your albums and open one.
 - **Steam.** Steam Big Picture, full screen. Go back to home and your game keeps running, with a Quit button on its tile. If Steam isn't on the box yet, adding the app installs it, and you sign in right on the TV.
