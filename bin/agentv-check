@@ -5,9 +5,9 @@
 # agentv:examples=agentv check | agentv check --ci --fetch-base
 # agentv:hidden=true
 
-# The same file lives in agentv-os and agentv-iso. Keep the two copies
-# identical. It runs on the Mac's bash 3.2 as well, so it can be the gate
-# before every commit there: no mapfile, namerefs or associative arrays.
+# The same file lives in agentv-os, agentv-iso and agentv-apps. Keep the
+# copies identical. It runs on the Mac's bash 3.2 as well, so it can be the
+# gate before every commit there: no mapfile, namerefs or associative arrays.
 
 set -euo pipefail
 
@@ -87,9 +87,9 @@ if [[ ! -f .github/omarchy-base ]]; then
   pass "not a fork, so every file is AgenTV's"
 else
   base=$(sed -n '1{s/[[:space:]]//g;p;}' .github/omarchy-base)
+  upstream=$(sed -n '1{s/[[:space:]]//g;p;}' .github/omarchy-upstream)
 
   if ! git rev-parse --verify --quiet "$base^{commit}" >/dev/null && (( fetch_base )); then
-    upstream=$(sed -n '1{s/[[:space:]]//g;p;}' .github/omarchy-upstream)
     if [[ $base == v* ]]; then
       git fetch --quiet --no-tags "https://github.com/$upstream.git" "+refs/tags/$base:refs/tags/$base"
     else
@@ -102,6 +102,27 @@ else
     exit 1
   fi
   log_range="$base_commit..HEAD"
+
+  # The commits that are AgenTV's: not the base's, and not those of any base
+  # the fork sat on before. When Omarchy cuts a release beside the line the
+  # fork was on, as it did 4.5 beside 4.0.x, the old line's own commits are
+  # still in agentv's history but not in the new base's.
+  while IFS= read -r commit; do
+    old=$(git show "$commit:.github/omarchy-base" 2>/dev/null | sed -n '1{s/[[:space:]]//g;p;}')
+    [[ -n $old && $old != "$base" ]] || continue
+    if ! git rev-parse --verify --quiet "$old^{commit}" >/dev/null && (( fetch_base )); then
+      if [[ $old == v* ]]; then
+        git fetch --quiet --no-tags "https://github.com/$upstream.git" "+refs/tags/$old:refs/tags/$old" || true
+      else
+        git fetch --quiet --no-tags "https://github.com/$upstream.git" "$old" || true
+      fi
+    fi
+    if old_commit=$(git rev-parse --verify --quiet "$old^{commit}"); then
+      log_range+=" ^$old_commit"
+    else
+      fail "the earlier Omarchy base $old is in this clone" "run agentv-check --fetch-base, or fetch it from upstream"
+    fi
+  done < <(git log --format=%H -- .github/omarchy-base)
   pass "the Omarchy base is $base"
 
   # --- Omarchy's files are untouched ----------------------------------------
@@ -187,7 +208,8 @@ scan() {
 # --- No em dashes, in files or commit messages ------------------------------
 
 found=$(scan "$EM_DASH" bytes "$WORK/ours")
-git log --format='%h %s%n%b' "$log_range" | grep -F "$EM_DASH" >"$WORK/dash-commits" || true
+# shellcheck disable=SC2086 # the range is a list of revisions
+git log --format='%h %s%n%b' $log_range | grep -F "$EM_DASH" >"$WORK/dash-commits" || true
 if [[ -n $found || -s $WORK/dash-commits ]]; then
   fail "no em dashes in what AgenTV added" "$(printf '%s\n%s' "$found" "$(cat "$WORK/dash-commits")" | sed '/^$/d')"
 else
@@ -196,20 +218,78 @@ fi
 
 # --- No service automation in a public repo ---------------------------------
 
-policy_lines service-hosts >"$WORK/hosts"
-found=""
-if [[ -s $WORK/hosts ]]; then
-  hosts=$(paste -sd '|' "$WORK/hosts")
-  found=$(scan "(?i)(?:$hosts)" bytes "$WORK/scanned")
-fi
+# The lists are refused in every file AgenTV added, with one exception. In
+# agentv-apps, each official streaming app has a folder of its own, and
+# service-folders says which. Inside its own folder an app may use the lines
+# under its service's "#@ <id>" heading in the lists, and nothing else. No
+# other repo has service-folders, so there the lists are refused everywhere.
+
+# A list's patterns, one a line, each followed by a tab and the services it
+# belongs to. "#@ <id> ..." starts a service's lines, and "#@" on its own
+# ends them.
+service_lines() {
+  [[ -f $POLICY_DIR/$1 ]] || return 0
+  # shellcheck disable=SC2016 # the single quotes hold perl, not shell
+  perl -ne '
+    if (/^\s*#@\s*(.*?)\s*$/) { $ids = $1; next }
+    s/\s*#.*$//; s/\s+$//;
+    print "$_\t$ids\n" if length;
+  ' "$POLICY_DIR/$1"
+}
+
+# Each file of a list, after the service whose folder it's in, if any, and a
+# tab. A folder always ends in a slash, so apps/tv/ never takes in
+# apps/tv-old/.
+by_service() {
+  # shellcheck disable=SC2016 # the single quotes hold perl, not shell
+  perl -e '
+    my @folders;
+    if (open(my $fh, "<", $ARGV[0])) {
+      while (<$fh>) {
+        s/\s*#.*$//;
+        my ($id, $dir) = split;
+        next unless defined $dir;
+        $dir .= "/" unless $dir =~ m{/$};
+        push @folders, [$id, $dir];
+      }
+    }
+    while (my $file = <STDIN>) {
+      chomp $file;
+      my ($in) = grep { index($file, $_->[1]) == 0 } @folders;
+      print(($in ? $in->[0] : ""), "\t$file\n");
+    }
+  ' "$POLICY_DIR/service-folders" <"$1"
+}
+
+# scan_lists <list> <files> <before> <after>: the files that use a pattern of
+# the list, each file against every pattern but its own service's. The
+# patterns go between before and after.
+scan_lists() {
+  local list="$1" files="$2" before="$3" after="$4" id patterns
+
+  [[ -s $list && -s $files ]] || return 0
+  by_service "$files" >"$WORK/by-service"
+  cut -f1 "$WORK/by-service" | sort -u >"$WORK/services"
+  while IFS= read -r id; do
+    awk -F '\t' -v id="$id" '$1 == id { print $2 }' "$WORK/by-service" >"$WORK/these"
+    patterns=$(awk -F '\t' -v id="$id" '{
+      n = split($2, ids, " ")
+      for (i = 1; i <= n; i++) if (ids[i] == id) next
+      print $1
+    }' "$list" | paste -sd '|' -)
+    if [[ -n $patterns ]]; then
+      scan "$before$patterns$after" bytes "$WORK/these"
+    fi
+  done <"$WORK/services"
+}
+
+service_lines service-hosts >"$WORK/hosts"
+found=$(scan_lists "$WORK/hosts" "$WORK/scanned" "(?i)(?:" ")")
 
 # Brand names count in code and config, not in prose.
 grep -vE '\.(md|txt)$|(^|/)LICENSE[^/]*$' "$WORK/scanned" >"$WORK/code" || true
-policy_lines service-names >"$WORK/names"
-if [[ -s $WORK/names ]]; then
-  names=$(paste -sd '|' "$WORK/names")
-  found=$(printf '%s\n%s' "$found" "$(scan "(?i)\\b(?:$names)\\b" bytes "$WORK/code")" | sed '/^$/d')
-fi
+service_lines service-names >"$WORK/names"
+found=$(printf '%s\n%s' "$found" "$(scan_lists "$WORK/names" "$WORK/code" "(?i)\\b(?:" ")\\b")" | sed '/^$/d')
 
 if [[ -n $found ]]; then
   fail "no service automation in a public repo" "$found"
@@ -323,6 +403,20 @@ else
     mkdir -p "$WORK/tree/$(dirname -- "$file")"
     cp -- "$file" "$WORK/tree/$file"
   done <"$WORK/ours"
+
+  # A clone without file contents, as CI's checkout is, fetches each one
+  # the first time it's read, so gitleaks would fetch them a commit at a
+  # time. Fetch every version the AgenTV commits changed in one go first.
+  if [[ $(git config --get remote.origin.promisor) == "true" ]]; then
+    # shellcheck disable=SC2086 # the range is a list of revisions
+    git log --no-merges --raw --no-abbrev --format= $log_range \
+      | awk '$1 != ":160000" { print $3 } $2 != "160000" { print $4 }' \
+      | grep -v '^0*$' | sort -u >"$WORK/blobs" || true
+    if [[ -s $WORK/blobs ]]; then
+      git -c fetch.negotiationAlgorithm=noop fetch --quiet --no-tags --no-write-fetch-head \
+        --recurse-submodules=no --filter=blob:none --stdin origin <"$WORK/blobs" || true
+    fi
+  fi
 
   # -v prints each finding, redacted, so the log says where it is.
   leaked=0

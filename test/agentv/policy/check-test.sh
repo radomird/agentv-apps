@@ -48,8 +48,11 @@ git tag v1.0.0
 # AgenTV's additions.
 mkdir -p .github test/agentv/policy
 cp "$ROOT/bin/agentv-check" bin/
-cp "$ROOT"/test/agentv/policy/service-* "$ROOT"/test/agentv/policy/upstream-exceptions \
-  "$ROOT"/test/agentv/policy/owner-allowed test/agentv/policy/
+# The lists, but not agentv-apps' service-folders: the cases below write
+# their own.
+cp "$ROOT"/test/agentv/policy/service-hosts "$ROOT"/test/agentv/policy/service-names \
+  "$ROOT"/test/agentv/policy/upstream-exceptions "$ROOT"/test/agentv/policy/owner-allowed \
+  test/agentv/policy/
 printf 'v1.0.0\n' >.github/omarchy-base
 printf 'example/upstream\n' >.github/omarchy-upstream
 printf 'AgenTV. Powered by Omarchy.\n' >.github/README.md
@@ -124,6 +127,71 @@ output=$(bin/agentv-check ${ci_flag[@]+"${ci_flag[@]}"} 2>&1) || fail "a service
 pass "a service name in prose is allowed"
 reset_fork
 
+printf 'const home = "https://www.youtube.com/";\n' >app.ts
+expect_fail "YouTube's host in code fails" "no service automation"
+
+printf 'export const name = "HBO Max";\n' >app.ts
+expect_fail "HBO Max's name in code fails" "no service automation"
+
+printf 'const home = "https://www.skyshowtime.com/";\n' >app.ts
+expect_fail "SkyShowtime's host in code fails" "no service automation"
+
+# --- A service's own folder, in agentv-apps only ----------------------------
+
+# Every repo but agentv-apps: no service-folders, so an app's folder is
+# refused like any other.
+mkdir -p apps/netflix
+printf 'const home = "https://www.netflix.com/";\n' >apps/netflix/app.ts
+expect_fail "without service-folders, a service's own folder is refused too" "no service automation"
+
+# agentv-apps: each service's lines in its own folder, and nowhere else.
+own_folders() {
+  printf 'netflix apps/netflix/\nyoutubekids apps/youtubekids\nhbomax apps/hbomax/\n' >test/agentv/policy/service-folders
+  mkdir -p apps/netflix apps/youtubekids apps/hbomax
+}
+
+own_folders
+printf 'export const name = "Netflix";\nconst home = "https://www.netflix.com/";\nconst art = "https://occ.nflxext.com/";\n' >apps/netflix/app.ts
+printf 'Netflix opens www.netflix.com.\n' >apps/netflix/README.md
+output=$(bin/agentv-check ${ci_flag[@]+"${ci_flag[@]}"} 2>&1) || fail "a service's name and hosts are allowed in its own folder" "$output"
+pass "a service's name and hosts are allowed in its own folder"
+reset_fork
+
+own_folders
+printf 'export const name = "YouTube Kids";\nconst home = "https://www.youtubekids.com/";\nconst art = "https://i.ytimg.com/";\n' >apps/youtubekids/app.ts
+output=$(bin/agentv-check ${ci_flag[@]+"${ci_flag[@]}"} 2>&1) || fail "a heading can give a line to two services" "$output"
+pass "a heading can give a line to two services, and a folder may leave off its slash"
+reset_fork
+
+own_folders
+printf 'const other = "https://www.netflix.com/";\n' >apps/hbomax/app.ts
+expect_fail "a service's host in another service's folder fails" "no service automation"
+
+own_folders
+printf 'export const name = "Netflix";\n' >apps/youtubekids/app.ts
+expect_fail "a service's name in another service's folder fails" "no service automation"
+
+own_folders
+printf 'const home = "https://www.youtubekids.com/";\n' >apps/netflix/app.ts
+expect_fail "a line for one service isn't allowed in a folder for another" "no service automation"
+
+own_folders
+printf 'const home = "https://www.netflix.com/";\n' >app.ts
+expect_fail "with service-folders, a service's host outside its folder still fails" "no service automation"
+
+own_folders
+mkdir -p apps/netflix-old
+printf 'const home = "https://www.netflix.com/";\n' >apps/netflix-old/app.ts
+expect_fail "a folder that only starts like a service's isn't its folder" "no service automation"
+
+own_folders
+printf 'const music = "https://open.spotify.com/";\n' >apps/netflix/app.ts
+expect_fail "a line under no heading is refused in every folder" "no service automation"
+
+own_folders
+printf 'const home = "https://www.skyshowtime.com/";\n' >apps/netflix/app.ts
+expect_fail "a service with no folder is refused in every folder" "no service automation"
+
 printf 'const url = "https://github.com/example-owner/agentv-index";\n' >app.ts
 expect_fail "the GitHub owner in code fails" "the GitHub owner"
 
@@ -187,6 +255,34 @@ expect_fail "a file with an unusual name is still scanned" "no em dashes"
 
 printf 'fine\n' >"$(printf 'two\nlines')"
 expect_fail "a file name with a newline fails" "file names have no control characters"
+
+# --- A base on a sibling line -----------------------------------------------
+
+# Upstream cuts 1.5.0 from before 1.0.0's last commit, beside it, and the fork
+# moves its base there as a merge with the tag's tree plus AgenTV's files. The
+# old line's own commits, em dash and all, are still in the fork's history,
+# but they're upstream's, not AgenTV's.
+first=$(git rev-list --max-parents=0 HEAD)
+git switch -q --detach "$first"
+git commit -q --allow-empty -m "$(printf 'Upstream on the old line \xe2\x80\x94 not ours')"
+old_line=$(git rev-parse HEAD)
+git switch -q --detach "$first"
+git commit -q --allow-empty -m "Upstream 1.5.0"
+git tag v1.5.0
+git switch -q main
+# The fork has followed the old line to its newest release, also v1.0.0 here.
+git merge -q --no-edit -m "Merge the old line" "$old_line"
+git tag -f v1.0.0 "$old_line" >/dev/null
+git merge -q --no-edit -s ours -m "Merge Upstream 1.5.0, a sibling" v1.5.0
+printf 'v1.5.0\n' >.github/omarchy-base
+git commit -qam "Move the base to 1.5.0"
+output=$(bin/agentv-check ${ci_flag[@]+"${ci_flag[@]}"} 2>&1) || fail "an earlier base's own commits aren't AgenTV's" "$output"
+pass "an earlier base's own commits aren't AgenTV's"
+
+git commit -q --allow-empty -m "$(printf 'AgenTV on 1.5 \xe2\x80\x94 ours')"
+output=$(bin/agentv-check ${ci_flag[@]+"${ci_flag[@]}"} 2>&1) && fail "AgenTV's commits on the new base are still scanned" "$output"
+[[ $output == *"not ok - no em dashes"* ]] || fail "AgenTV's commits on the new base are still scanned" "$output"
+pass "AgenTV's commits on the new base are still scanned"
 
 # --- A repo of AgenTV's own has no Omarchy base ----------------------------
 
