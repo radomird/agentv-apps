@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Disney+ stand-in: a series</title>
+<!-- A stand-in for a series' page on Disney+, made by hand: its play button,
+     the season it shows first, and its episodes as links to the player,
+     labelled the way Disney+ labels them. The series is made up. -->
+<style>
+  body { margin: 0; background: #111; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  nav button { margin-left: auto; font: inherit; padding: 8px 16px; }
+  main { padding: 24px 48px; }
+  input { font: inherit; width: 296px; padding: 12px; }
+  .row { display: flex; gap: 24px; margin: 32px 0; }
+  .row a { display: block; width: 320px; color: #eee; text-decoration: none; }
+  [data-testid="set-item-tile"] { height: 180px; background: #345; }
+</style>
+<body>
+  <script>
+    // Signed in, as far as the stand-ins go: sign-in.html sends you on.
+    localStorage.setItem("stand-in-signed-in", "yes");
+  </script>
+  <nav>
+    <a href="/home" aria-label="Home">Home</a>
+    <a href="/eu/browse/search" aria-label="Search">Search</a>
+    <a href="/browse/movies" aria-label="Movies">Movies</a>
+    <a href="/browse/series" aria-label="Series">Series</a>
+    <button type="button" data-testid="dropdown-active-profile" aria-label="Sam's profile. Select this to change profiles." aria-expanded="false"><p>Sam</p></button>
+  </nav>
+  <main>
+    <h1>Paper Boats</h1>
+    <a data-testid="playback-action-button" aria-label="CONTINUE" href="/eu/play/e9150de0-0000-4000-8000-000000000302">continue</a>
+    <button type="button" data-testid="dropdown-button" aria-haspopup="listbox" aria-expanded="false"><span>Season 3</span></button>
+    <div class="row">
+      <a data-testid="set-item" data-item-id="e9150de0-0000-4000-8000-000000000301" aria-label="Season 3 Episode 1 The Pond Two friends find a pond. Select to watch this." tabindex="0" href="/eu/play/e9150de0-0000-4000-8000-000000000301"><div data-testid="set-item-tile"></div><div><span>1. The Pond</span></div></a>
+      <a data-testid="set-item" data-item-id="e9150de0-0000-4000-8000-000000000302" aria-label="Season 3 Episode 2 Rain It rains all day. Select to watch this." tabindex="0" href="/eu/play/e9150de0-0000-4000-8000-000000000302"><div data-testid="set-item-tile"></div><div><span>2. Rain</span></div></a>
+      <a data-testid="set-item" data-item-id="e9150de0-0000-4000-8000-000000000303" aria-label="Season 3 Episode 3 The Map A map leads somewhere. Select to watch this." tabindex="0" href="/eu/play/e9150de0-0000-4000-8000-000000000303"><div data-testid="set-item-tile"></div><div><span>3. The Map</span></div></a>
+    </div>
+  </main>
+</body>
+</html>
