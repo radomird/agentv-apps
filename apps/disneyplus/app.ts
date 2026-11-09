@@ -12,8 +12,11 @@
 //   Log In, [data-testid=log_in]. The sign-in form is under /identity/.
 // - Search is /browse/search, with #searchInput, and each title it finds is a
 //   link to /browse/entity-<id>.
-// - A title's page lists its episodes as links to /play/<id>, labelled
-//   "Season 3 Episode 1 Bedroom ...", or has a play button for a film.
+// - A title's page lists one season's episodes as links to /play/<id>,
+//   labelled "Season 3 Episode 1 Bedroom ...", or for an Original after a
+//   pick "Disney+ Original Season 1 Episode 1 ...", or has a play button for
+//   a film. Its season button opens a list of the seasons, and picking one
+//   shows that season's episodes.
 // - The player draws its controls, with the title and "S3:E1 Bedroom", the
 //   timeline, play and pause, and PLAY NEXT, only while they show. A mouse
 //   move over the picture shows them; the capture's probe saw that work on
@@ -23,9 +26,7 @@
 // reason, never a retry loop. The page is all in Disney+'s own DOM, in open
 // shadow roots too, so each read in the page walks into them.
 //
-// Not written yet, since its pages haven't been captured: picking a season
-// other than the one a series' page shows first. It has no profiles: Disney+
-// opens on whichever profile it's signed in to.
+// It has no profiles: Disney+ opens on whichever profile it's signed in to.
 
 import type { AppContext, AppPage, Item, PlaybackState, TvApp } from "../../.agentv-os/apps/contract/contract.ts";
 
@@ -206,17 +207,39 @@ async function results(query: string): Promise<Found[]> {
 
 // On a title's page: the link to play the episode asked for, or the film or
 // the series' own play button. A reason instead when there's none.
-function watchLink(want: { season: number | null; episode: number | null }): { href?: string; error?: string } {
+function watchLink(want: { season: number | null; episode: number | null }): { href?: string; error?: string; season?: string } {
   if (want.season !== null && want.episode !== null) {
-    const label = `Season ${want.season} Episode ${want.episode} `;
-    const link = [...document.querySelectorAll('a[data-testid="set-item"][href*="/play/"]')].find((a) => (a.getAttribute("aria-label") ?? "").startsWith(label));
+    const label = new RegExp(`(?:^|\\s)Season ${want.season} Episode ${want.episode}(?:\\s|$)`);
+    const link = [...document.querySelectorAll('a[data-testid="set-item"][href*="/play/"]')].find((a) => label.test(a.getAttribute("aria-label") ?? ""));
     if (link) return { href: link.getAttribute("href") ?? "" };
     const showing = document.querySelector('[data-testid="dropdown-button"]')?.textContent?.trim();
-    if (showing && showing !== `Season ${want.season}`) return { error: `Disney+ shows ${showing} first, and picking Season ${want.season} isn't written yet` };
+    if (showing && showing !== `Season ${want.season}`) return { season: showing };
     return { error: `Season ${want.season} Episode ${want.episode} isn't on its page` };
   }
   const play = document.querySelector('a[data-testid="playback-action-button"][href*="/play/"]');
   return play ? { href: play.getAttribute("href") ?? "" } : { error: "its page has nothing to play" };
+}
+
+// The season asked for, picked from the list its season button opens. Null
+// once the page shows it, or a reason.
+async function pickSeason(season: number): Promise<string | null> {
+  const name = `Season ${season}`;
+  const button = document.querySelector<HTMLElement>('[data-testid="dropdown-button"]');
+  if (!button) return "its page has no seasons to pick";
+  const option = () =>
+    [...document.querySelectorAll<HTMLElement>('[data-testid="dropdown-list"] [role="option"]')].find((el) => (el.getAttribute("title") ?? el.textContent?.trim()) === name);
+  if (button.getAttribute("aria-expanded") !== "true") button.click();
+  for (let i = 0; i < 30 && !option(); i++) await new Promise((resolve) => setTimeout(resolve, 100));
+  const pick = option();
+  if (!pick) return `Disney+ has no ${name} of it`;
+  pick.click();
+  const label = new RegExp(`(?:^|\\s)${name} Episode \\d+(?:\\s|$)`);
+  for (let i = 0; i < 50; i++) {
+    const links = [...document.querySelectorAll('a[data-testid="set-item"][href*="/play/"]')];
+    if (button.textContent?.trim() === name && links.some((a) => label.test(a.getAttribute("aria-label") ?? ""))) return null;
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return `Disney+ didn't show ${name}`;
 }
 
 // --- The app -------------------------------------------------------------------
@@ -290,8 +313,15 @@ const app: TvApp = {
       }
       await p.goto(`${base(here(p).href)}/browse/entity-${entity}`);
       await p.waitForSelector('[data-testid="playback-action-button"]', { timeout: 10_000 });
-      const link = await p.evaluate(watchLink, { season: item.season ?? null, episode: item.episode ?? null });
-      if (!link.href) throw new Error(`${item.title}: ${link.error}`);
+      const want = { season: item.season ?? null, episode: item.episode ?? null };
+      let link = await p.evaluate(watchLink, want);
+      // Another season first: pick it from the season list, then look again.
+      if (link.season && want.season !== null) {
+        const why = await p.evaluate(pickSeason, want.season);
+        if (why) throw new Error(`${item.title}: ${why}`);
+        link = await p.evaluate(watchLink, want);
+      }
+      if (!link.href) throw new Error(`${item.title}: ${link.error ?? `Season ${want.season} Episode ${want.episode} isn't on its page`}`);
       await p.goto(new URL(link.href, ORIGIN).href);
       await p.waitForSelector("disney-web-player", { timeout: 15_000, state: "attached" });
     },
