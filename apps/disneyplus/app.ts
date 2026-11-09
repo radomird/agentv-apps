@@ -23,9 +23,9 @@
 // reason, never a retry loop. The page is all in Disney+'s own DOM, in open
 // shadow roots too, so each read in the page walks into them.
 //
-// Not written yet, since the pages for them haven't been captured: picking a
-// season other than the one a series' page shows first, and profiles
-// (ADR-009) for a child watching.
+// Not written yet, since its pages haven't been captured: picking a season
+// other than the one a series' page shows first. It has no profiles: Disney+
+// opens on whichever profile it's signed in to.
 
 import type { AppContext, AppPage, Item, PlaybackState, TvApp } from "../../.agentv-os/apps/contract/contract.ts";
 
