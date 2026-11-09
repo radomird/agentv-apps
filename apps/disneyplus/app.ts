@@ -227,15 +227,7 @@ function watchLink(want: { season: number | null; episode: number | null }): { h
 // shown over the picture every time it's asked.
 let learned: { key: string; title: string; season?: number; episode?: number; offset: number; duration: number; at: number } | null = null;
 
-// The contract's playback, with the pause and resume the box will call once
-// AgenTV's app contract has them. Play and pause on the phone go to these
-// first, then to the video on the page.
-type Playback = NonNullable<TvApp["playback"]> & {
-  pause(ctx: AppContext): Promise<void>;
-  resume(ctx: AppContext): Promise<void>;
-};
-
-const app: TvApp & { playback: Playback } = {
+const app: TvApp = {
   id: "agentv.disneyplus",
 
   async launch(ctx) {
@@ -348,7 +340,8 @@ const app: TvApp & { playback: Playback } = {
       throw new Error("Disney+ didn't move to the next episode");
     },
 
-    // The controls' own play and pause, so Disney+'s player knows.
+    // The controls' own play and pause, so Disney+'s player knows. Play and
+    // pause on the phone come here first, then to the video on the page.
     async pause(ctx) {
       const p = page(ctx);
       if (!PLAYING.test(here(p).pathname)) throw new Error("nothing is playing on Disney+");

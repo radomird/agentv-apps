@@ -452,9 +452,7 @@
       "after": {
         "url": "/eu/browse/entity-5e1e5000-0000-4000-8000-000000000001$"
       }
-    }
-  ],
-  "checksForPauseAndResume": [
+    },
     {
       "name": "pause presses the player's own pause, and waits until the video stops",
       "id": "T9.1",

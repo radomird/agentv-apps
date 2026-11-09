@@ -20,5 +20,3 @@ A few of the stand-ins do a little in a script, the way Disney+'s pages do:
 That last one is why the checks keep their order: a signed-out page comes before the sign-in form.
 
 The d-pad checks press your phone's arrows, OK and Back in those pages, as they'd reach them on your TV, and look at where the focus lands.
-
-`checksForPauseAndResume` in `contract.json` will join the other checks once AgenTV's app rules have pause and resume. Until then, AgenTV's test runner doesn't know those two calls.
