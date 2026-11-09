@@ -52,6 +52,8 @@ for manifest in "$ROOT"/apps/*/manifest.json; do
   entry=$(jq -c --arg id "$id" '.apps[] | select(.id == $id)' "$work/index/index.json")
   [[ $(jq -r .path <<<"$entry") == "$path" && $(jq -r .tier <<<"$entry") == "official" ]] ||
     fail "the index lists $id as official, in $path" "$entry"
+  [[ $(jq -r .category <<<"$entry") == $(jq -r .tv.category "$manifest") ]] ||
+    fail "the index gives $id its manifest's category" "$entry"
   out=$(install "$id" --index "$work/index" 2>&1) || fail "ADR-036 $id installs from the signed index" "$out"
   [[ $out == "Installed $(jq -r .name <<<"$entry") $(jq -r .version <<<"$entry") ($id)." ]] || fail "it says what it installed" "$out"
   installed="$work/state/apps/$id"
