@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>HBO Max stand-in: sign in</title>
+<!-- A stand-in for HBO Max's sign-in form, made by hand. Its fields are inside
+     shadow roots, the way HBO Max draws them. -->
+<style>
+  body { margin: 0; background: #000; color: #eee; font: 24px sans-serif; padding: 48px; }
+</style>
+<body>
+  <gi-sign-in></gi-sign-in>
+  <script>
+    const outer = document.querySelector("gi-sign-in").attachShadow({ mode: "open" });
+    const form = document.createElement("gi-form");
+    outer.append(form);
+    form.attachShadow({ mode: "open" }).innerHTML =
+      '<form><label>Email <input id="sign-in-phoneEmail-input" type="email" name="phoneEmail" autocomplete="email"></label>' +
+      '<label>Password <input id="sign-in-password-input" type="password" name="password" autocomplete="current-password"></label>' +
+      '<button type="submit">Sign In</button></form>';
+  </script>
+</body>
+</html>

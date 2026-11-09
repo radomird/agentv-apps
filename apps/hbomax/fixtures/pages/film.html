@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>HBO Max stand-in: a film</title>
+<!-- A stand-in for a film's page on HBO Max, made by hand: its trailer button
+     and its play button, which share a test id, as on HBO Max. Here the
+     trailer's comes first. The film is made up. -->
+<style>
+  body { margin: 0; background: #000; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  nav button { margin-left: auto; font: inherit; padding: 8px 16px; }
+  section { padding: 24px 48px; }
+  section button { font: inherit; padding: 12px 24px; margin-right: 16px; }
+</style>
+<body>
+  <nav data-testid="navigationMenu">
+    <a href="/" aria-label="Home">Home</a>
+    <a href="/search" data-testid="search_button" aria-label="Search">Search</a>
+    <button type="button" data-testid="profile_button" aria-label="Profile">Adult</button>
+  </nav>
+  <section data-testid="details-hero-container">
+    <h1>Lantern Bay: The Movie</h1>
+    <button type="button" data-testid="play_button" aria-label="&#x2066;&#x2068;Watch trailer for Lantern Bay: The Movie&#x2069;&#x2069;" onclick="location.assign('/video/watch/7a11e000-0000-4000-8000-000000000008')">Trailer</button>
+    <button type="button" data-testid="play_button" aria-label="&#x2066;&#x2068;Resume Lantern Bay: The Movie, 81 minutes remaining&#x2069;&#x2069;" onclick="location.assign('/video/watch/f17a0000-0000-4000-8000-000000000102')">Resume</button>
+  </section>
+</body>
+</html>

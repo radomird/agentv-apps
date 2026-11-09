@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "agentv.hbomax",
+  "name": "HBO Max",
+  "version": "1.0.0",
+  "author": "agentv",
+  "license": "MIT",
+  "description": "HBO Max on the TV",
+  "kinds": ["tv-app"],
+  "entryPoints": { "tvApp": "app.ts" },
+  "tv": {
+    "contract": 1,
+    "category": "streaming",
+    "runtime": "web",
+    "homeUrl": "https://www.hbomax.com/",
+    "capabilities": ["launch", "signIn", "search", "playback"],
+    "setup": [{ "type": "signIn" }],
+    "origins": ["https://www.hbomax.com"],
+    "tiles": { "s": "logo", "m": "continue" },
+    "childSafe": false
+  }
+}

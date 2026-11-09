@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>HBO Max stand-in: search</title>
+<!-- A stand-in for HBO Max's search, made by hand, with what the app reads: the
+     search box, and each tile's link, name and year. A sports event and a clip
+     link elsewhere, as HBO Max's do. Its titles are made up. -->
+<style>
+  body { margin: 0; background: #000; color: #eee; font: 24px sans-serif; }
+  nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
+  nav a { color: #eee; padding: 8px 16px; }
+  nav button { margin-left: auto; font: inherit; padding: 8px 16px; }
+  main { padding: 24px 48px; }
+  input { font: inherit; width: 296px; padding: 12px; }
+  .row { display: flex; gap: 24px; margin: 32px 0; }
+  .row a { display: block; width: 320px; color: #eee; text-decoration: none; }
+  .row a > div { height: 180px; background: #324; }
+</style>
+<body>
+  <nav data-testid="navigationMenu">
+    <a href="/" aria-label="Home">Home</a>
+    <a href="/search" data-testid="search_button" aria-label="Search">Search</a>
+    <a href="/my-stuff" data-testid="my-stuff_button" aria-label="My Stuff">My Stuff</a>
+    <button type="button" data-testid="profile_button" aria-label="Profile">Adult</button>
+  </nav>
+  <main>
+    <input type="text" data-testid="searchBar_field" aria-label="Search" placeholder="Find movies, shows, and more" maxlength="75">
+    <div class="row" data-testid="search-page-rail-results_grid">
+      <a data-testid="1a7e0000-0000-4000-8000-000000000001_tile" data-sonic-id="1a7e0000-0000-4000-8000-000000000001" data-sonic-type="show" aria-label="Lantern Bay. Row 1 of 1, Column 1 of 5. 3 Seasons" href="/show/1a7e0000-0000-4000-8000-000000000001"><div aria-hidden="true"></div><p><span>Lantern Bay</span></p><p><span data-testid="metadata_total_seasons_tile">3 Seasons</span></p></a>
+      <a data-testid="f17a0000-0000-4000-8000-000000000002_tile" data-sonic-id="f17a0000-0000-4000-8000-000000000002" data-sonic-type="show" aria-label="Lantern Bay: The Movie. Row 1 of 1, Column 2 of 5. Released in 2026" href="/movie/f17a0000-0000-4000-8000-000000000002"><div aria-hidden="true"></div><p><span>Lantern Bay: The Movie</span></p><p><span data-testid="metadata_release_year">2026</span></p></a>
+      <a data-testid="5a0e0000-0000-4000-8000-000000000003_tile" data-sonic-id="5a0e0000-0000-4000-8000-000000000003" data-sonic-type="show" aria-label="Lantern Cup Final. Row 1 of 1, Column 3 of 5" href="/sport/5a0e0000-0000-4000-8000-000000000003"><div aria-hidden="true"></div><p><span>Lantern Cup Final</span></p></a>
+      <a data-testid="c11b0000-0000-4000-8000-000000000004_tile" data-sonic-id="c11b0000-0000-4000-8000-000000000004" data-sonic-type="video" aria-label="Lantern Bay: Behind the Scenes. Row 1 of 1, Column 4 of 5" href="/video/watch/c11b0000-0000-4000-8000-000000000004"><div aria-hidden="true"></div><p><span>Lantern Bay: Behind the Scenes</span></p></a>
+      <a data-testid="5da10000-0000-4000-8000-000000000005_tile" data-sonic-id="5da10000-0000-4000-8000-000000000005" data-sonic-type="show" aria-label="Lanterns. Row 1 of 1, Column 5 of 5. Released in 2019" href="/standalone/5da10000-0000-4000-8000-000000000005"><div aria-hidden="true"></div><p><span>Lanterns</span></p><p><span data-testid="metadata_release_year">2019</span></p></a>
+    </div>
+  </main>
+</body>
+</html>
