@@ -3,8 +3,10 @@
 <meta charset="utf-8">
 <title>Disney+ stand-in: a series</title>
 <!-- A stand-in for a series' page on Disney+, made by hand: its play button,
-     the season it shows first, and its episodes as links to the player,
-     labelled the way Disney+ labels them. The series is made up. -->
+     the season it shows first, its season list, and its episodes as links to
+     the player, labelled the way Disney+ labels them. Picking Season 1 from
+     the list shows its episodes, labelled "Disney+ Original Season 1 ...", as
+     Disney+ labelled an Original's after a pick. The series is made up. -->
 <style>
   body { margin: 0; background: #111; color: #eee; font: 24px sans-serif; }
   nav { display: flex; align-items: center; gap: 24px; padding: 24px 48px; }
@@ -15,6 +17,8 @@
   .row { display: flex; gap: 24px; margin: 32px 0; }
   .row a { display: block; width: 320px; color: #eee; text-decoration: none; }
   [data-testid="set-item-tile"] { height: 180px; background: #345; }
+  [data-testid="dropdown"] { display: inline-block; position: relative; }
+  [data-testid="dropdown-list"] { position: absolute; margin: 0; padding: 8px; list-style: none; background: #222; }
 </style>
 <body>
   <script>
@@ -31,12 +35,57 @@
   <main>
     <h1>Paper Boats</h1>
     <a data-testid="playback-action-button" aria-label="CONTINUE" href="/eu/play/e9150de0-0000-4000-8000-000000000302">continue</a>
-    <button type="button" data-testid="dropdown-button" aria-haspopup="listbox" aria-expanded="false"><span>Season 3</span></button>
-    <div class="row">
+    <div data-testid="dropdown">
+      <button type="button" data-testid="dropdown-button" aria-haspopup="listbox" aria-expanded="false"><span>Season 3</span></button>
+      <ul data-testid="dropdown-list" role="listbox" tabindex="-1" hidden>
+        <li role="option" tabindex="-1" aria-selected="true" title="Season 3"><div>Season 3</div></li>
+        <li role="option" tabindex="0" aria-selected="false" title="Season 1"><div>Season 1</div></li>
+      </ul>
+    </div>
+    <div class="row" id="episodes">
       <a data-testid="set-item" data-item-id="e9150de0-0000-4000-8000-000000000301" aria-label="Season 3 Episode 1 The Pond Two friends find a pond. Select to watch this." tabindex="0" href="/eu/play/e9150de0-0000-4000-8000-000000000301"><div data-testid="set-item-tile"></div><div><span>1. The Pond</span></div></a>
       <a data-testid="set-item" data-item-id="e9150de0-0000-4000-8000-000000000302" aria-label="Season 3 Episode 2 Rain It rains all day. Select to watch this." tabindex="0" href="/eu/play/e9150de0-0000-4000-8000-000000000302"><div data-testid="set-item-tile"></div><div><span>2. Rain</span></div></a>
       <a data-testid="set-item" data-item-id="e9150de0-0000-4000-8000-000000000303" aria-label="Season 3 Episode 3 The Map A map leads somewhere. Select to watch this." tabindex="0" href="/eu/play/e9150de0-0000-4000-8000-000000000303"><div data-testid="set-item-tile"></div><div><span>3. The Map</span></div></a>
     </div>
   </main>
+  <script>
+    // The season list opens from its button, and a pick shows that season.
+    const button = document.querySelector('[data-testid="dropdown-button"]');
+    const list = document.querySelector('[data-testid="dropdown-list"]');
+    button.addEventListener("click", () => {
+      list.hidden = !list.hidden;
+      button.setAttribute("aria-expanded", String(!list.hidden));
+    });
+    const seasons = {
+      "Season 1": [
+        ["e9150de0-0000-4000-8000-000000000101", "Disney+ Original Season 1 Episode 1 The Dock Two friends build a dock. Select to watch this.", "1. The Dock"],
+        ["e9150de0-0000-4000-8000-000000000102", "Disney+ Original Season 1 Episode 2 Fog A boat gets lost. Select to watch this.", "2. Fog"],
+      ],
+    };
+    for (const option of list.querySelectorAll('[role="option"]')) {
+      option.addEventListener("click", () => {
+        const name = option.getAttribute("title");
+        list.hidden = true;
+        button.setAttribute("aria-expanded", "false");
+        if (!seasons[name]) return;
+        // Disney+ swaps the episodes in a moment after the pick.
+        setTimeout(() => {
+          button.querySelector("span").textContent = name;
+          const row = document.querySelector("#episodes");
+          row.replaceChildren(...seasons[name].map(([id, label, text]) => {
+            const link = document.createElement("a");
+            link.dataset.testid = "set-item";
+            link.dataset.itemId = id;
+            link.setAttribute("aria-label", label);
+            link.tabIndex = 0;
+            link.href = `/eu/play/${id}`;
+            link.innerHTML = '<div data-testid="set-item-tile"></div><div><span></span></div>';
+            link.querySelector("span").textContent = text;
+            return link;
+          }));
+        }, 300);
+      });
+    }
+  </script>
 </body>
 </html>

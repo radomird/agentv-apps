@@ -33,6 +33,10 @@
       "file": "pages/playing.html"
     },
     {
+      "url": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000102",
+      "file": "pages/playing.html"
+    },
+    {
       "url": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301",
       "file": "pages/playing.html"
     },
@@ -204,7 +208,7 @@
       }
     },
     {
-      "name": "open() says when the episode's season isn't the one the page shows",
+      "name": "open() picks another season from the season list, and plays its episode, an Original's label and all",
       "id": "T9.1",
       "page": "https://www.disneyplus.com/eu/browse/search",
       "call": "playback.open",
@@ -214,10 +218,28 @@
           "kind": "episode",
           "title": "Paper Boats",
           "season": 1,
-          "episode": 5
+          "episode": 2
         }
       ],
-      "throws": "Disney\\+ shows Season 3 first, and picking Season 1 isn't written yet"
+      "after": {
+        "url": "/eu/play/e9150de0-0000-4000-8000-000000000102$"
+      }
+    },
+    {
+      "name": "open() says when the series hasn't that season",
+      "id": "T9.1",
+      "page": "https://www.disneyplus.com/eu/browse/search",
+      "call": "playback.open",
+      "args": [
+        {
+          "id": "5e1e5000-0000-4000-8000-000000000001",
+          "kind": "episode",
+          "title": "Paper Boats",
+          "season": 9,
+          "episode": 1
+        }
+      ],
+      "throws": "Paper Boats: Disney\\+ has no Season 9 of it"
     },
     {
       "name": "open() says when there's nothing by that name",
