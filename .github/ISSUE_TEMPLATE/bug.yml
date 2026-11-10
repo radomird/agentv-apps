@@ -1,0 +1,62 @@
+name: An app isn't working
+description: Tell me which app, and what it did
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for telling me. Please leave out keys, passwords and anything from your own accounts.
+
+        Found a security problem? Don't write it here. [Tell me privately](https://github.com/radomird/agentv-apps/security/advisories/new) instead.
+
+  - type: input
+    id: app
+    attributes:
+      label: Which app?
+      description: Its name on the TV.
+    validations:
+      required: true
+
+  - type: textarea
+    id: happened
+    attributes:
+      label: What did it do?
+      description: What you pressed or asked for, and what the app did. A photo of the screen helps.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: opens
+    attributes:
+      label: Does the tile still open it?
+      options:
+        - "Yes"
+        - "No"
+        - I haven't tried
+    validations:
+      required: false
+
+  - type: input
+    id: release
+    attributes:
+      label: AgenTV release
+      description: It's in _Settings > About_ on the TV. Or run `agentv version` on the box.
+      placeholder: e.g. 0.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: box
+    attributes:
+      label: Box
+      description: The make and model.
+      placeholder: e.g. Intel NUC8i5BEH
+    validations:
+      required: true
