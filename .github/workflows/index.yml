@@ -2,9 +2,17 @@ name: Index
 
 # After every push to main, once Check has passed on it: builds index.json
 # from the apps, signs it with AgenTV's key and publishes it as the "index"
-# release, where a box reads it (ADR-010, ADR-036). bin/publish-index first
-# installs each app from the signed index, from GitHub, the way a box does.
-# The key is the AGENTV_SIGNING_KEY secret; without it nothing is published.
+# release, where a box reads it (ADR-010, ADR-036).
+#
+# Three jobs. The first builds the index and fetches AgenTV's public key,
+# without the signing key. The second has the key and does nothing but sign:
+# it takes index.json as it was built, checks it against the checksum the
+# first job wrote down, and runs bin/sign-index. The third installs each app
+# from the signed index, from GitHub, the way a box does, and publishes
+# (bin/publish-index). So the key is never in a job that fetches anything.
+#
+# The key is AGENTV_SIGNING_KEY, read through the "release" environment,
+# which only main may use. Without it nothing is published.
 
 on:
   workflow_run:
@@ -14,18 +22,20 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: index
   cancel-in-progress: false
 
 jobs:
-  publish:
-    name: Sign and publish the index
+  index:
+    name: Build the index
     if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-26.04
     timeout-minutes: 10
+    outputs:
+      sums: ${{ steps.sums.outputs.sums }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -33,9 +43,101 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Sign, check and publish
+      - name: Build it
+        run: bin/index index
+
+      # The key agentv-keyring trusts, from agentv-pkgs beside this repo:
+      # what the signing key is checked against, and what a box checks the
+      # index with.
+      - name: Fetch AgenTV's public key
+        run: |
+          keyring="https://raw.githubusercontent.com/$GITHUB_REPOSITORY_OWNER/agentv-pkgs/main/agentv-keyring"
+          curl -fsSL -o index/agentv-trusted "$keyring/agentv-trusted"
+          curl -fsSL -o index/agentv.gpg "$keyring/agentv.gpg"
+
+      # The list the signing job checks the files against. Its own checksum
+      # goes to that job as this job's output, not with the files.
+      - name: Write down what was built
+        id: sums
+        run: |
+          (cd index && sha256sum index.json agentv-trusted agentv.gpg) >SHA256SUMS
+          cat SHA256SUMS
+          echo "sums=$(sha256sum SHA256SUMS | cut -d' ' -f1)" >>"$GITHUB_OUTPUT"
+
+      - name: Hand the index to the signing job
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: index-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            index/index.json
+            index/agentv-trusted
+            index/agentv.gpg
+            SHA256SUMS
+          if-no-files-found: error
+          retention-days: 1
+
+  # The only job that has the key. It fetches nothing but the files the job
+  # above made.
+  sign:
+    name: Sign the index
+    needs: index
+    runs-on: ubuntu-26.04
+    timeout-minutes: 5
+    environment: release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          sparse-checkout: bin
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: index-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Check the files are the ones the build made
+        env:
+          SUMS: ${{ needs.index.outputs.sums }}
+        run: |
+          echo "$SUMS  SHA256SUMS" | sha256sum -c -
+          (cd index && sha256sum -c ../SHA256SUMS)
+
+      - name: Sign
         env:
           AGENTV_SIGNING_KEY: ${{ secrets.AGENTV_SIGNING_KEY }}
+        run: bin/sign-index index
+
+      - name: Hand the signed index on
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: signed-index-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            index/index.json
+            index/index.json.sig
+            index/agentv.gpg
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Check and publish the index
+    needs: sign
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: signed-index-${{ github.run_id }}-${{ github.run_attempt }}
+          path: index
+
+      - name: Install each app from it, then publish
+        env:
           GH_TOKEN: ${{ github.token }}
           GITHUB_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-        run: bin/publish-index
+        run: bin/publish-index index

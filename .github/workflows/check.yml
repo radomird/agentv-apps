@@ -80,6 +80,8 @@ jobs:
         run: test/versions "$BASE"
       - name: Each app installs from a signed index, the way a box installs it
         run: test/index-test.sh
+      - name: The index is signed by AgenTV's key only, in a job that does nothing else
+        run: test/sign-index-test.sh
 
   contract:
     name: "Each app against its recorded replies"

@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Signs the index bin/index built, in <dir>, with AgenTV's key. That's all
+# it does: it needs gpg, and it fetches nothing, so the job that has the key
+# runs this and nothing else. bin/publish-index installs from the signed
+# index and publishes it afterwards, without the key.
+#
+# The key comes in AGENTV_SIGNING_KEY (the armored secret key), goes into a
+# keyring made for this run, and is out of the environment before anything
+# else happens. It has to be the one agentv-keyring trusts: <dir> has that
+# keyring's agentv-trusted, from agentv-pkgs.
+#
+# Usage: bin/sign-index <dir>   (needs AGENTV_SIGNING_KEY)
+
+set -euo pipefail
+
+dir=$(realpath "${1:?usage: bin/sign-index <dir>}")
+
+if [[ -z ${AGENTV_SIGNING_KEY:-} ]]; then
+  echo "::error::AGENTV_SIGNING_KEY is empty. The index is only ever published signed." >&2
+  exit 1
+fi
+for file in index.json agentv-trusted; do
+  [[ -s $dir/$file ]] || { echo "::error::$dir has no $file" >&2; exit 1; }
+done
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+export GNUPGHOME="$work/gnupg"
+mkdir -m 700 "$GNUPGHOME"
+
+# In, and straight out of the environment: nothing this script starts after
+# the import inherits the key.
+key=$AGENTV_SIGNING_KEY
+unset AGENTV_SIGNING_KEY
+printf '%s\n' "$key" | gpg --batch --quiet --import
+unset key
+
+mapfile -t secret < <(gpg --batch --with-colons --list-secret-keys | awk -F: '$1 == "sec" { want = 1 } want && $1 == "fpr" { print $10; want = 0 }')
+if (( ${#secret[@]} != 1 )); then
+  echo "::error::AGENTV_SIGNING_KEY holds ${#secret[@]} keys. It signs with exactly one." >&2
+  exit 1
+fi
+fpr=${secret[0]}
+trusted=$(cut -d: -f1 "$dir/agentv-trusted" | head -n 1)
+if [[ $fpr != "$trusted" ]]; then
+  echo "::error::the signing key ($fpr) isn't the one agentv-keyring trusts ($trusted)" >&2
+  exit 1
+fi
+
+rm -f "$dir/index.json.sig"
+gpg --batch --yes --quiet --local-user "$fpr" --detach-sign --output "$dir/index.json.sig" "$dir/index.json"
+
+# gpgv takes a signature only from a key in the keyring it's given, and this
+# one holds the signing key alone.
+gpg --batch --export "$fpr" >"$work/signer.gpg"
+if ! gpgv --quiet --keyring "$work/signer.gpg" "$dir/index.json.sig" "$dir/index.json" 2>"$work/gpgv.log"; then
+  cat "$work/gpgv.log" >&2
+  echo "::error::index.json isn't signed by $fpr" >&2
+  exit 1
+fi
+echo "index.json signed by $fpr"
