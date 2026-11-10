@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # Every check a pull request gets, short of the policy check's own tests:
-# the fast gate, the types, the recordings, the index, the versions and every
-# app against its fixtures. CI runs each as a job of its own.
+# the fast gate, the types, the recordings, the index, how it's signed, the
+# versions and every app against its fixtures. CI runs each as a job of its
+# own.
 #
 # Usage: test/run
 
@@ -18,5 +19,6 @@ bin/agentv-check
 test/types
 node ${flags[@]+"${flags[@]}"} --disable-warning=ExperimentalWarning --test --test-reporter=tap test/*.test.mts | grep -E '^(not )?ok '
 test/index-test.sh
+test/sign-index-test.sh
 test/versions
 test/contract
