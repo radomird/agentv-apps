@@ -235,6 +235,56 @@
       "throws": "Couldn't find Lantern on Prime Video"
     },
     {
+      "name": "show() opens a film's own page from New this week, found by its name and kind, without playing it",
+      "page": "https://www.primevideo.com/region/eu/detail/0LANTERNBAYS1000000000001",
+      "call": "playback.show",
+      "args": [
+        {
+          "id": "tmdb:movie:2",
+          "kind": "film",
+          "title": "Lantern Bay: The Movie",
+          "year": 2026
+        }
+      ],
+      "expect": true,
+      "after": {
+        "url": "/region/eu/detail/0LANTERNMOVIE00000000002$"
+      }
+    },
+    {
+      "name": "show() opens a series' own page, not a film of the same name",
+      "page": "https://www.primevideo.com/region/eu/detail/0LANTERNMOVIE00000000002",
+      "call": "playback.show",
+      "args": [
+        {
+          "id": "tmdb:tv:1",
+          "kind": "series",
+          "title": "Lantern Bay",
+          "year": 2024
+        }
+      ],
+      "expect": true,
+      "after": {
+        "url": "/region/eu/detail/0LANTERNBAYS1000000000001$"
+      }
+    },
+    {
+      "name": "show() doesn't pick a series for a film of the same name, and leaves Prime Video on its search",
+      "page": "https://www.primevideo.com/region/eu/detail/0LANTERNMOVIE00000000002",
+      "call": "playback.show",
+      "args": [
+        {
+          "id": "tmdb:movie:4",
+          "kind": "film",
+          "title": "Lantern Bay"
+        }
+      ],
+      "expect": false,
+      "after": {
+        "url": "/region/eu/search"
+      }
+    },
+    {
       "name": "readPlaybackState shows the controls with a pointer move, and reads the programme, not the short video before it",
       "id": "T9.1",
       "page": "https://www.primevideo.com/region/eu/detail/0LBS1E2000000000000000102?autoplay=1&t=0",
