@@ -96,7 +96,7 @@
       "id": "T9.1",
       "page": "https://www.disneyplus.com/",
       "call": "signIn.isSignedIn",
-      "throws": "doesn't say yet whether you're signed in"
+      "throws": "Still checking if you're signed in to Disney\\+"
     },
     {
       "name": "signIn.open takes its page to the form that asks for the email",
@@ -239,7 +239,7 @@
           "episode": 1
         }
       ],
-      "throws": "Paper Boats: Disney\\+ has no Season 9 of it"
+      "throws": "Couldn't find season 9$"
     },
     {
       "name": "open() says when there's nothing by that name",
@@ -253,7 +253,7 @@
           "title": "Paper"
         }
       ],
-      "throws": "Disney\\+ has nothing called Paper"
+      "throws": "Couldn't find Paper on Disney\\+"
     },
     {
       "name": "readPlaybackState reads the title, season, episode and position off the player's controls",
@@ -314,7 +314,7 @@
       "id": "T9.1",
       "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000302",
       "call": "playback.readPlaybackState",
-      "throws": "Disney\\+'s player didn't show what's playing"
+      "throws": "Couldn't tell what's playing on Disney\\+"
     },
     {
       "name": "off the player, nothing is playing",
@@ -337,14 +337,14 @@
       "id": "T9.1",
       "page": "https://www.disneyplus.com/eu/play/f11f0000-0000-4000-8000-000000000002",
       "call": "playback.next",
-      "throws": "Disney\\+ offers no next episode here"
+      "throws": "There's no next episode"
     },
     {
       "name": "next off the player says nothing is playing",
       "id": "T9.1",
       "page": "https://www.disneyplus.com/eu/browse/search",
       "call": "playback.next",
-      "throws": "nothing is playing on Disney\\+"
+      "throws": "Nothing is playing on Disney\\+"
     },
     {
       "name": "the d-pad: down from search's box goes to the first title it found",
@@ -510,14 +510,14 @@
       "id": "T9.1",
       "page": "https://www.disneyplus.com/eu/play/e9150de0-0000-4000-8000-000000000301?fixture=controls-gone",
       "call": "playback.pause",
-      "throws": "Disney\\+'s player didn't show its play and pause"
+      "throws": "Couldn't play or pause Disney\\+"
     },
     {
       "name": "resume off the player says nothing is playing",
       "id": "T9.1",
       "page": "https://www.disneyplus.com/eu/browse/search",
       "call": "playback.resume",
-      "throws": "nothing is playing on Disney\\+"
+      "throws": "Nothing is playing on Disney\\+"
     }
   ]
 }

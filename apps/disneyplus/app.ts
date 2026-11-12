@@ -40,7 +40,7 @@ const PLAYING = /\/play\/[0-9a-f-]{36}$/;
 const RELEARN_MS = 10 * 60_000;
 
 function page(ctx: AppContext): AppPage {
-  if (!ctx.page) throw new Error("Disney+'s page isn't open");
+  if (!ctx.page) throw new Error("Open Disney+ first");
   return ctx.page;
 }
 
@@ -151,7 +151,7 @@ async function playOrPause(want: string): Promise<string | null> {
     return box.width * box.height;
   };
   const video = (deep(document, "video") as HTMLVideoElement[]).sort((a, b) => area(b) - area(a))[0];
-  if (!video) return "nothing is playing on Disney+";
+  if (!video) return "Nothing is playing on Disney+";
   const done = () => (want === "paused" ? video.paused : !video.paused);
   if (done()) return null;
   const find = () => {
@@ -168,10 +168,10 @@ async function playOrPause(want: string): Promise<string | null> {
     for (let i = 0; i < 15 && !find(); i++) await new Promise((resolve) => setTimeout(resolve, 100));
   }
   const button = find();
-  if (!button) return "Disney+'s player didn't show its play and pause";
+  if (!button) return "Couldn't play or pause Disney+";
   button.click();
   for (let i = 0; i < 30 && !done(); i++) await new Promise((resolve) => setTimeout(resolve, 100));
-  return done() ? null : `Disney+'s player didn't ${want === "paused" ? "pause" : "play"}`;
+  return done() ? null : `Couldn't ${want === "paused" ? "pause" : "play"} Disney+`;
 }
 
 interface Found {
@@ -207,17 +207,17 @@ async function results(query: string): Promise<Found[]> {
 
 // On a title's page: the link to play the episode asked for, or the film or
 // the series' own play button. A reason instead when there's none.
-function watchLink(want: { season: number | null; episode: number | null }): { href?: string; error?: string; season?: string } {
+function watchLink(want: { title: string; season: number | null; episode: number | null }): { href?: string; error?: string; season?: string } {
   if (want.season !== null && want.episode !== null) {
     const label = new RegExp(`(?:^|\\s)Season ${want.season} Episode ${want.episode}(?:\\s|$)`);
     const link = [...document.querySelectorAll('a[data-testid="set-item"][href*="/play/"]')].find((a) => label.test(a.getAttribute("aria-label") ?? ""));
     if (link) return { href: link.getAttribute("href") ?? "" };
     const showing = document.querySelector('[data-testid="dropdown-button"]')?.textContent?.trim();
     if (showing && showing !== `Season ${want.season}`) return { season: showing };
-    return { error: `Season ${want.season} Episode ${want.episode} isn't on its page` };
+    return { error: `Couldn't find season ${want.season}, episode ${want.episode}` };
   }
   const play = document.querySelector('a[data-testid="playback-action-button"][href*="/play/"]');
-  return play ? { href: play.getAttribute("href") ?? "" } : { error: "its page has nothing to play" };
+  return play ? { href: play.getAttribute("href") ?? "" } : { error: `Couldn't play ${want.title}` };
 }
 
 // The season asked for, picked from the list its season button opens. Null
@@ -225,13 +225,13 @@ function watchLink(want: { season: number | null; episode: number | null }): { h
 async function pickSeason(season: number): Promise<string | null> {
   const name = `Season ${season}`;
   const button = document.querySelector<HTMLElement>('[data-testid="dropdown-button"]');
-  if (!button) return "its page has no seasons to pick";
+  if (!button) return `Couldn't find season ${season}`;
   const option = () =>
     [...document.querySelectorAll<HTMLElement>('[data-testid="dropdown-list"] [role="option"]')].find((el) => (el.getAttribute("title") ?? el.textContent?.trim()) === name);
   if (button.getAttribute("aria-expanded") !== "true") button.click();
   for (let i = 0; i < 30 && !option(); i++) await new Promise((resolve) => setTimeout(resolve, 100));
   const pick = option();
-  if (!pick) return `Disney+ has no ${name} of it`;
+  if (!pick) return `Couldn't find season ${season}`;
   pick.click();
   const label = new RegExp(`(?:^|\\s)${name} Episode \\d+(?:\\s|$)`);
   for (let i = 0; i < 50; i++) {
@@ -239,7 +239,7 @@ async function pickSeason(season: number): Promise<string | null> {
     if (button.textContent?.trim() === name && links.some((a) => label.test(a.getAttribute("aria-label") ?? ""))) return null;
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
-  return `Disney+ didn't show ${name}`;
+  return `Couldn't open season ${season}`;
 }
 
 // --- The app -------------------------------------------------------------------
@@ -267,7 +267,7 @@ const app: TvApp = {
       const said = await p.evaluate(() =>
         document.querySelector('[data-testid="dropdown-active-profile"]') ? "in" : document.querySelector('[data-testid="log_in"]') ? "out" : null,
       );
-      if (said === null) throw new Error("Disney+'s page doesn't say yet whether you're signed in");
+      if (said === null) throw new Error("Still checking if you're signed in to Disney+");
       return said === "in";
     },
     // The form that asks for the email, which the phone then fills
@@ -308,20 +308,20 @@ const app: TvApp = {
       let entity = ENTITY.test(item.id) ? item.id : null;
       if (!entity) {
         const found = (await app.search!(ctx, item.title)).find((title) => title.title.toLowerCase() === item.title.toLowerCase());
-        if (!found) throw new Error(`Disney+ has nothing called ${item.title}`);
+        if (!found) throw new Error(`Couldn't find ${item.title} on Disney+`);
         entity = found.id;
       }
       await p.goto(`${base(here(p).href)}/browse/entity-${entity}`);
       await p.waitForSelector('[data-testid="playback-action-button"]', { timeout: 10_000 });
-      const want = { season: item.season ?? null, episode: item.episode ?? null };
+      const want = { title: item.title, season: item.season ?? null, episode: item.episode ?? null };
       let link = await p.evaluate(watchLink, want);
       // Another season first: pick it from the season list, then look again.
       if (link.season && want.season !== null) {
         const why = await p.evaluate(pickSeason, want.season);
-        if (why) throw new Error(`${item.title}: ${why}`);
+        if (why) throw new Error(why);
         link = await p.evaluate(watchLink, want);
       }
-      if (!link.href) throw new Error(`${item.title}: ${link.error ?? `Season ${want.season} Episode ${want.episode} isn't on its page`}`);
+      if (!link.href) throw new Error(link.error ?? `Couldn't find season ${want.season}, episode ${want.episode}`);
       await p.goto(new URL(link.href, ORIGIN).href);
       await p.waitForSelector("disney-web-player", { timeout: 15_000, state: "attached" });
     },
@@ -346,7 +346,7 @@ const app: TvApp = {
           at: Date.now(),
         };
       }
-      if (!learned || learned.key !== key) throw new Error("Disney+'s player didn't show what's playing");
+      if (!learned || learned.key !== key) throw new Error("Couldn't tell what's playing on Disney+");
       const position = now.title && now.now !== null ? now.now : Math.round(((now.time ?? 0) - learned.offset) * 10) / 10;
       return {
         title: learned.title,
@@ -361,27 +361,27 @@ const app: TvApp = {
     async next(ctx) {
       const p = page(ctx);
       const before = here(p).pathname;
-      if (!PLAYING.test(before)) throw new Error("nothing is playing on Disney+");
-      if (!(await p.evaluate(playNext))) throw new Error("Disney+ offers no next episode here");
+      if (!PLAYING.test(before)) throw new Error("Nothing is playing on Disney+");
+      if (!(await p.evaluate(playNext))) throw new Error("There's no next episode");
       for (let waited = 0; waited < 7_000; waited += 250) {
         await sleep(250);
         if ((await p.evaluate(() => location.pathname)) !== before) return;
       }
-      throw new Error("Disney+ didn't move to the next episode");
+      throw new Error("Couldn't skip to the next episode");
     },
 
     // The controls' own play and pause, so Disney+'s player knows. Play and
     // pause on the phone come here first, then to the video on the page.
     async pause(ctx) {
       const p = page(ctx);
-      if (!PLAYING.test(here(p).pathname)) throw new Error("nothing is playing on Disney+");
+      if (!PLAYING.test(here(p).pathname)) throw new Error("Nothing is playing on Disney+");
       const why = await p.evaluate(playOrPause, "paused");
       if (why) throw new Error(why);
     },
 
     async resume(ctx) {
       const p = page(ctx);
-      if (!PLAYING.test(here(p).pathname)) throw new Error("nothing is playing on Disney+");
+      if (!PLAYING.test(here(p).pathname)) throw new Error("Nothing is playing on Disney+");
       const why = await p.evaluate(playOrPause, "playing");
       if (why) throw new Error(why);
     },
