@@ -78,7 +78,7 @@
       "id": "T9.1",
       "page": "https://www.primevideo.com/",
       "call": "signIn.isSignedIn",
-      "throws": "doesn't say yet whether you're signed in"
+      "throws": "Still checking if you're signed in to Prime Video"
     },
     {
       "name": "signIn.open presses Prime Video's own Sign In, which goes on to Amazon's page",
@@ -218,7 +218,7 @@
           "episode": 9
         }
       ],
-      "throws": "Lantern Bay: Season 1, episode 9 isn't on its page"
+      "throws": "Couldn't find season 1, episode 9"
     },
     {
       "name": "open() says when there's nothing by that name",
@@ -232,7 +232,7 @@
           "title": "Lantern"
         }
       ],
-      "throws": "Prime Video has nothing called Lantern"
+      "throws": "Couldn't find Lantern on Prime Video"
     },
     {
       "name": "readPlaybackState shows the controls with a pointer move, and reads the programme, not the short video before it",
@@ -291,14 +291,14 @@
       "id": "T9.1",
       "page": "https://www.primevideo.com/region/eu/detail/0LANTERNMOVIE00000000002?autoplay=1&t=0&ref_=atv_dp_atf_play",
       "call": "playback.next",
-      "throws": "Prime Video offers no next episode here"
+      "throws": "There's no next episode"
     },
     {
       "name": "next off the player says nothing is playing",
       "id": "T9.1",
       "page": "https://www.primevideo.com/region/eu/search",
       "call": "playback.next",
-      "throws": "nothing is playing on Prime Video"
+      "throws": "Nothing is playing on Prime Video"
     },
     {
       "name": "pause presses the player's own pause, and waits until the programme stops",
@@ -323,7 +323,7 @@
       "id": "T9.1",
       "page": "https://www.primevideo.com/region/eu/search",
       "call": "playback.resume",
-      "throws": "nothing is playing on Prime Video"
+      "throws": "Nothing is playing on Prime Video"
     },
     {
       "name": "the d-pad: down from the menu goes to the search box, then the first result",

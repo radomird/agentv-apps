@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "agentv.primevideo",
   "name": "Prime Video",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "agentv",
   "license": "MIT",
-  "description": "Prime Video on the TV. On Linux, Prime Video plays in SD.",
+  "description": "Prime Video. Plays in standard definition.",
   "kinds": ["tv-app"],
   "entryPoints": { "tvApp": "app.ts" },
   "tv": {

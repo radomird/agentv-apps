@@ -38,7 +38,7 @@ const HOME = `${ORIGIN}/`;
 const ID = /^[0-9A-Z]{10,40}$/;
 
 function page(ctx: AppContext): AppPage {
-  if (!ctx.page) throw new Error("Prime Video's page isn't open");
+  if (!ctx.page) throw new Error("Open Prime Video first");
   return ctx.page;
 }
 
@@ -99,7 +99,7 @@ async function player(wake: boolean): Promise<Player> {
 async function press(want: string): Promise<string | null> {
   const videos = [...document.querySelectorAll("video")].filter((v) => Number.isFinite(v.duration) && v.duration > 0);
   const video = videos.sort((a, b) => b.duration - a.duration)[0];
-  if (!video) return "nothing is playing on Prime Video";
+  if (!video) return "Nothing is playing on Prime Video";
   const done = () => (want === "paused" ? video.paused : want === "playing" ? !video.paused : false);
   if (done()) return null;
   const id = want === "next" ? "#atvwebplayersdk-next-episode-button" : "#atvwebplayersdk-play-pause-button";
@@ -111,11 +111,11 @@ async function press(want: string): Promise<string | null> {
     for (let i = 0; i < 15 && !document.querySelector(id); i++) await new Promise((resolve) => setTimeout(resolve, 100));
   }
   const button = document.querySelector<HTMLElement>(id);
-  if (!button) return want === "next" ? "Prime Video offers no next episode here" : "Prime Video's player didn't show its play and pause";
+  if (!button) return want === "next" ? "There's no next episode" : "Couldn't play or pause Prime Video";
   button.click();
   if (want === "next") return null;
   for (let i = 0; i < 30 && !done(); i++) await new Promise((resolve) => setTimeout(resolve, 100));
-  return done() ? null : `Prime Video's player didn't ${want === "paused" ? "pause" : "play"}`;
+  return done() ? null : `Couldn't ${want === "paused" ? "pause" : "play"} Prime Video`;
 }
 
 // Whether the page says you're signed in, once its menu is drawn. Null after
@@ -159,11 +159,11 @@ function seasonLink(season: number): string | null {
   return href && id(href) !== id(location.pathname) ? href : null;
 }
 
-// On a season's page: the episode's play link, or a reason.
-function episodeLink(episode: number): { href?: string; error?: string } {
+// On a season's page: the episode's play link, or null.
+function episodeLink(episode: number): string | null {
   const item = [...document.querySelectorAll('[data-testid="episode-list-item"]')].find((li) => (li.querySelector("h3")?.textContent?.trim() ?? "").startsWith(`${episode}. `));
   const href = item?.querySelector('a[data-testid="episodes-playbutton"]')?.getAttribute("href");
-  return href ? { href } : { error: `episode ${episode} isn't on its page` };
+  return href ?? null;
 }
 
 // --- The app -------------------------------------------------------------------
@@ -182,7 +182,7 @@ const app: TvApp = {
       if (url.origin !== ORIGIN) return false;
       if (url.pathname.includes("/profiles")) return true;
       const said = await p.evaluate(signedIn);
-      if (said === null) throw new Error("Prime Video's page doesn't say yet whether you're signed in");
+      if (said === null) throw new Error("Still checking if you're signed in to Prime Video");
       return said;
     },
     // Prime Video's own Sign In, which goes on to Amazon's sign-in page for
@@ -195,7 +195,7 @@ const app: TvApp = {
         await p.goto(HOME);
         said = await p.evaluate(signedIn);
       }
-      if (said === null) throw new Error("Prime Video's page didn't show Sign In");
+      if (said === null) throw new Error("Couldn't open Prime Video's sign-in");
       if (!said) await p.click('[data-testid="pv-nav-sign-in"]');
     },
   },
@@ -216,7 +216,7 @@ const app: TvApp = {
       let id = ID.test(item.id) ? item.id : null;
       if (!id) {
         const found = (await app.search!(ctx, item.title)).find((title) => title.title.toLowerCase() === item.title.toLowerCase());
-        if (!found) throw new Error(`Prime Video has nothing called ${item.title}`);
+        if (!found) throw new Error(`Couldn't find ${item.title} on Prime Video`);
         id = found.id;
       }
       const at = base(here(p));
@@ -229,12 +229,11 @@ const app: TvApp = {
           await p.goto(new URL(season, ORIGIN).href);
           await p.waitForSelector('[data-testid="dp-atf-play-button"]', { timeout: 10_000 });
         }
-        const link = await p.evaluate(episodeLink, item.episode);
-        if (!link.href) throw new Error(`${item.title}: Season ${item.season}, ${link.error}`);
-        href = link.href;
+        href = await p.evaluate(episodeLink, item.episode);
+        if (!href) throw new Error(`Couldn't find season ${item.season}, episode ${item.episode}`);
       } else {
         href = await p.evaluate(() => document.querySelector('[data-testid="dp-atf-play-button"]')?.getAttribute("href") ?? null);
-        if (!href) throw new Error(`${item.title}: its page has nothing to play`);
+        if (!href) throw new Error(`Couldn't play ${item.title}`);
       }
       await p.goto(new URL(href, ORIGIN).href);
       await p.waitForSelector("video", { timeout: 15_000, state: "attached" });
@@ -246,7 +245,7 @@ const app: TvApp = {
       const p = page(ctx);
       if (!playing(here(p))) return null;
       const now = await p.evaluate(player, true);
-      if (!now.title || now.duration === null) throw new Error("Prime Video's player didn't show what's playing");
+      if (!now.title || now.duration === null) throw new Error("Couldn't tell what's playing on Prime Video");
       const numbers = /^S(\d+)\s*E(\d+)\b/.exec(now.info ?? "");
       return {
         title: now.title,
@@ -261,28 +260,28 @@ const app: TvApp = {
     async next(ctx) {
       const p = page(ctx);
       const before = here(p).href;
-      if (!playing(here(p))) throw new Error("nothing is playing on Prime Video");
+      if (!playing(here(p))) throw new Error("Nothing is playing on Prime Video");
       const why = await p.evaluate(press, "next");
       if (why) throw new Error(why);
       for (let waited = 0; waited < 7_000; waited += 250) {
         await sleep(250);
         if ((await p.evaluate(() => location.href)) !== before) return;
       }
-      throw new Error("Prime Video didn't move to the next episode");
+      throw new Error("Couldn't skip to the next episode");
     },
 
     // The player's own play and pause, so Prime Video's player knows. Play and
     // pause on the phone come here first, then to the video on the page.
     async pause(ctx) {
       const p = page(ctx);
-      if (!playing(here(p))) throw new Error("nothing is playing on Prime Video");
+      if (!playing(here(p))) throw new Error("Nothing is playing on Prime Video");
       const why = await p.evaluate(press, "paused");
       if (why) throw new Error(why);
     },
 
     async resume(ctx) {
       const p = page(ctx);
-      if (!playing(here(p))) throw new Error("nothing is playing on Prime Video");
+      if (!playing(here(p))) throw new Error("Nothing is playing on Prime Video");
       const why = await p.evaluate(press, "playing");
       if (why) throw new Error(why);
     },

@@ -103,7 +103,7 @@
       "id": "T9.1",
       "page": "https://www.hbomax.com/",
       "call": "signIn.isSignedIn",
-      "throws": "doesn't say yet whether you're signed in"
+      "throws": "Still checking if you're signed in to HBO Max"
     },
     {
       "name": "signIn.open takes its page to the form that asks for the email, inside its shadow roots",
@@ -267,7 +267,7 @@
           "episode": 9
         }
       ],
-      "throws": "Lantern Bay: Season 1 Episode 9 isn't on its page"
+      "throws": "Couldn't find season 1, episode 9"
     },
     {
       "name": "open() says when there's nothing by that name",
@@ -281,7 +281,7 @@
           "title": "Lantern"
         }
       ],
-      "throws": "HBO Max has nothing called Lantern"
+      "throws": "Couldn't find Lantern on HBO Max"
     },
     {
       "name": "readPlaybackState reads the title, season and episode off the hidden controls, and the position off the video's clock",
@@ -326,7 +326,7 @@
       "id": "T9.1",
       "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102?fixture=loading",
       "call": "playback.readPlaybackState",
-      "throws": "HBO Max's player doesn't say what's playing"
+      "throws": "Couldn't tell what's playing on HBO Max"
     },
     {
       "name": "off the player, nothing is playing",
@@ -349,14 +349,14 @@
       "id": "T9.1",
       "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102",
       "call": "playback.next",
-      "throws": "HBO Max offers no next episode here"
+      "throws": "There's no next episode"
     },
     {
       "name": "next off the player says nothing is playing",
       "id": "T9.1",
       "page": "https://www.hbomax.com/search",
       "call": "playback.next",
-      "throws": "nothing is playing on HBO Max"
+      "throws": "Nothing is playing on HBO Max"
     },
     {
       "name": "pause presses the player's own pause, and waits until the video stops",
@@ -387,14 +387,14 @@
       "id": "T9.1",
       "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102?fixture=loading",
       "call": "playback.pause",
-      "throws": "HBO Max's player has no play and pause"
+      "throws": "Couldn't play or pause HBO Max"
     },
     {
       "name": "resume off the player says nothing is playing",
       "id": "T9.1",
       "page": "https://www.hbomax.com/search",
       "call": "playback.resume",
-      "throws": "nothing is playing on HBO Max"
+      "throws": "Nothing is playing on HBO Max"
     },
     {
       "name": "the d-pad: down from search's box goes to the first title it found",

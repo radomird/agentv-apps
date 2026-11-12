@@ -16,24 +16,24 @@ const READ_MS = 5_000;
 // Who's asking, as Plex wants every client to say.
 const CLIENT = { "X-Plex-Product": "AgenTV", "X-Plex-Client-Identifier": "agentv-plex", Accept: "application/json" };
 
-function timed<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
+function timed<T>(promise: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   return Promise.race([
     promise,
     new Promise<never>((_, reject) => {
-      timer = setTimeout(() => reject(new Error(`${what} took longer than ${ms / 1000} s`)), ms);
+      timer = setTimeout(() => reject(new Error("Plex took too long")), ms);
     }),
   ]).finally(() => clearTimeout(timer));
 }
 
 function serverOf(ctx: AppContext): string {
   const url = ctx.settings.serverUrl ?? "";
-  if (!/^https?:\/\/[^/]/.test(url)) throw new Error("Plex has no server address yet");
+  if (!/^https?:\/\/[^/]/.test(url)) throw new Error("Add Plex's server address first");
   return url.replace(/\/+$/, "");
 }
 
 function pageOf(ctx: AppContext) {
-  if (!ctx.page) throw new Error("Plex's page isn't open");
+  if (!ctx.page) throw new Error("Open Plex first");
   return ctx.page;
 }
 
@@ -42,7 +42,6 @@ async function token(ctx: AppContext): Promise<string | null> {
   const kept = await timed(
     pageOf(ctx).evaluate(() => localStorage.getItem("myPlexAccessToken")),
     READ_MS,
-    "reading Plex's sign-in from its page",
   );
   return typeof kept === "string" && kept !== "" ? kept : null;
 }
@@ -59,9 +58,9 @@ const app: TvApp = {
     async isSignedIn(ctx) {
       const kept = await token(ctx);
       if (!kept) return false;
-      const response = await timed(fetch(`${serverOf(ctx)}/library/sections`, { headers: { ...CLIENT, "X-Plex-Token": kept } }), ASK_MS, "Plex");
+      const response = await timed(fetch(`${serverOf(ctx)}/library/sections`, { headers: { ...CLIENT, "X-Plex-Token": kept } }), ASK_MS);
       if (response.status === 401) return false;
-      if (!response.ok) throw new Error(`Plex answered ${response.status}`);
+      if (!response.ok) throw new Error("Couldn't reach Plex");
       return true;
     },
   },

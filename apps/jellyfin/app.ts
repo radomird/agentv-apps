@@ -43,24 +43,24 @@ interface Signed {
 
 class SignedOut extends Error {}
 
-function timed<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
+function timed<T>(promise: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   return Promise.race([
     promise,
     new Promise<never>((_, reject) => {
-      timer = setTimeout(() => reject(new Error(`${what} took longer than ${ms / 1000} s`)), ms);
+      timer = setTimeout(() => reject(new Error("Jellyfin took too long")), ms);
     }),
   ]).finally(() => clearTimeout(timer));
 }
 
 function serverOf(ctx: AppContext): string {
   const url = ctx.settings.serverUrl ?? "";
-  if (!/^https?:\/\/[^/]/.test(url)) throw new Error("Jellyfin has no server address yet");
+  if (!/^https?:\/\/[^/]/.test(url)) throw new Error("Add Jellyfin's server address first");
   return url.replace(/\/+$/, "");
 }
 
 function pageOf(ctx: AppContext) {
-  if (!ctx.page) throw new Error("Jellyfin's page isn't open");
+  if (!ctx.page) throw new Error("Open Jellyfin first");
   return ctx.page;
 }
 
@@ -75,7 +75,6 @@ async function signed(ctx: AppContext): Promise<Signed | null> {
       device: localStorage.getItem("_deviceId2"),
     })),
     READ_MS,
-    "reading Jellyfin's sign-in from its page",
   );
   let servers: { ManualAddress?: string; LocalAddress?: string; RemoteAddress?: string; AccessToken?: string; UserId?: string }[] = [];
   try {
@@ -101,7 +100,7 @@ async function signed(ctx: AppContext): Promise<Signed | null> {
 
 async function need(ctx: AppContext): Promise<Signed> {
   const who = await signed(ctx);
-  if (!who) throw new Error("Jellyfin isn't signed in");
+  if (!who) throw new Error("Sign in to Jellyfin first");
   return who;
 }
 
@@ -111,10 +110,9 @@ async function ask<T>(who: Signed, path: string, method = "GET"): Promise<T | nu
   const response = await timed(
     fetch(`${who.base}${path}`, { method, headers: { Authorization: `MediaBrowser Token="${who.token}"` } }),
     ASK_MS,
-    "Jellyfin",
   );
-  if (response.status === 401) throw new SignedOut("Jellyfin isn't signed in");
-  if (!response.ok) throw new Error(`Jellyfin answered ${response.status}`);
+  if (response.status === 401) throw new SignedOut("Sign in to Jellyfin first");
+  if (!response.ok) throw new Error("Couldn't reach Jellyfin");
   if (response.status === 204) return null;
   return (await response.json()) as T;
 }
@@ -155,10 +153,10 @@ function toItem(who: Signed, found: JellyfinItem): Item | null {
 
 // The page's own session, which Jellyfin can tell what to play.
 async function pageSession(who: Signed): Promise<JellyfinSession> {
-  if (!who.device) throw new Error("Jellyfin's page has no device id, so it can't be told what to play");
+  if (!who.device) throw new Error("Jellyfin isn't ready yet. Try again in a moment.");
   const sessions = await ask<JellyfinSession[]>(who, `/Sessions?deviceId=${encodeURIComponent(who.device)}`);
   const own = sessions?.find((session) => session.DeviceId === who.device);
-  if (!own) throw new Error("Jellyfin doesn't see its page as a session yet");
+  if (!own) throw new Error("Jellyfin isn't ready yet. Try again in a moment.");
   return own;
 }
 
@@ -171,7 +169,6 @@ async function video(ctx: AppContext): Promise<{ position: number; duration: num
       return { position: found.currentTime, duration: found.duration, playing: !found.paused && !found.ended };
     }),
     READ_MS,
-    "reading Jellyfin's player",
   );
 }
 
@@ -215,7 +212,7 @@ const app: TvApp = {
       if (item.kind === "series") {
         const next = await ask<{ Items?: JellyfinItem[] }>(who, `/Shows/NextUp?userId=${who.user}&seriesId=${id}&Limit=1`);
         const episode = next?.Items?.[0];
-        if (!episode) throw new Error(`Jellyfin has nothing next in ${item.title}`);
+        if (!episode) throw new Error(`There's no next episode of ${item.title}`);
         id = episode.Id;
       }
       const kept = await ask<JellyfinItem>(who, `/Items/${id}?userId=${who.user}`);
@@ -227,7 +224,7 @@ const app: TvApp = {
         if ((await video(ctx))?.playing) return;
         await new Promise((resolve) => setTimeout(resolve, 500));
       }
-      throw new Error(`Jellyfin didn't start ${item.title}`);
+      throw new Error(`Couldn't play ${item.title}`);
     },
 
     // Where it is from the page's video, and what it is from Jellyfin, which

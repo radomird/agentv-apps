@@ -33,7 +33,7 @@ const TITLE = /^(show|mini-series|movie|standalone)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-
 const PLAYING = /^\/video\/watch\/[0-9a-f-]{36}$/;
 
 function page(ctx: AppContext): AppPage {
-  if (!ctx.page) throw new Error("HBO Max's page isn't open");
+  if (!ctx.page) throw new Error("Open HBO Max first");
   return ctx.page;
 }
 
@@ -72,15 +72,15 @@ function player(): Player {
 // way it's asked to be yet. Null once the video says so, or a reason.
 async function playOrPause(want: string): Promise<string | null> {
   const video = document.querySelector<HTMLVideoElement>('video[data-testid="VideoElement"]');
-  if (!video) return "nothing is playing on HBO Max";
+  if (!video) return "Nothing is playing on HBO Max";
   const done = () => (want === "paused" ? video.paused : !video.paused);
   if (done()) return null;
   const all = [...document.querySelectorAll<HTMLElement>('[data-testid="player-ux-play-pause-button"]')];
   const button = all.find((el) => el.getClientRects().length > 0) ?? all[0];
-  if (!button) return "HBO Max's player has no play and pause";
+  if (!button) return "Couldn't play or pause HBO Max";
   button.click();
   for (let i = 0; i < 30 && !done(); i++) await new Promise((resolve) => setTimeout(resolve, 100));
-  return done() ? null : `HBO Max's player didn't ${want === "paused" ? "pause" : "play"}`;
+  return done() ? null : `Couldn't ${want === "paused" ? "pause" : "play"} HBO Max`;
 }
 
 interface Found {
@@ -116,7 +116,7 @@ function episodeLink(want: { season: number; episode: number }): { href?: string
   const plain = (s: string) => s.replace(/[⁦-⁩]/g, "");
   const label = new RegExp(`^Watch(?: Again:)? Season ${want.season}, Episode ${want.episode}:`);
   const link = [...document.querySelectorAll('a[href*="/video/watch/"]')].find((a) => label.test(plain(a.getAttribute("aria-label") ?? "")));
-  return link ? { href: link.getAttribute("href") ?? "" } : { error: `Season ${want.season} Episode ${want.episode} isn't on its page` };
+  return link ? { href: link.getAttribute("href") ?? "" } : { error: `Couldn't find season ${want.season}, episode ${want.episode}` };
 }
 
 // The sign-in form's email field, which HBO Max draws inside shadow roots,
@@ -170,7 +170,7 @@ const app: TvApp = {
             ? "out"
             : null,
       );
-      if (said === null) throw new Error("HBO Max's page doesn't say yet whether you're signed in");
+      if (said === null) throw new Error("Still checking if you're signed in to HBO Max");
       return said === "in";
     },
     // The form that asks for the email, which the phone then fills. Someone
@@ -179,7 +179,7 @@ const app: TvApp = {
     async open(ctx) {
       const p = page(ctx);
       await p.goto(SIGN_IN);
-      if (!(await p.evaluate(formOrSignedIn))) throw new Error("HBO Max's sign-in form didn't show");
+      if (!(await p.evaluate(formOrSignedIn))) throw new Error("Couldn't open HBO Max's sign-in");
     },
   },
 
@@ -208,7 +208,7 @@ const app: TvApp = {
       let path = TITLE.test(item.id) ? item.id : null;
       if (!path) {
         const found = (await app.search!(ctx, item.title)).find((title) => title.title.toLowerCase() === item.title.toLowerCase());
-        if (!found) throw new Error(`HBO Max has nothing called ${item.title}`);
+        if (!found) throw new Error(`Couldn't find ${item.title} on HBO Max`);
         path = found.id;
       }
       const episode = item.season !== undefined && item.episode !== undefined;
@@ -216,10 +216,10 @@ const app: TvApp = {
       await p.waitForSelector('[data-testid="play_button"]', { timeout: 10_000 });
       if (episode) {
         const link = await p.evaluate(episodeLink, { season: item.season!, episode: item.episode! });
-        if (!link.href) throw new Error(`${item.title}: ${link.error}`);
+        if (!link.href) throw new Error(link.error);
         await p.goto(new URL(link.href, ORIGIN).href);
       } else if (!(await p.evaluate(pressPlay))) {
-        throw new Error(`${item.title}: its page has nothing to play`);
+        throw new Error(`Couldn't play ${item.title}`);
       }
       await p.waitForSelector('video[data-testid="VideoElement"]', { timeout: 15_000, state: "attached" });
     },
@@ -231,7 +231,7 @@ const app: TvApp = {
       const url = here(p);
       if (url.origin !== ORIGIN || !PLAYING.test(url.pathname)) return null;
       const now = await p.evaluate(player);
-      if (!now.title || now.duration === null) throw new Error("HBO Max's player doesn't say what's playing");
+      if (!now.title || now.duration === null) throw new Error("Couldn't tell what's playing on HBO Max");
       const numbers = /^S(\d+)\s*E(\d+)\b/.exec(now.numbers ?? "");
       return {
         title: now.title,
@@ -247,32 +247,32 @@ const app: TvApp = {
     async next(ctx) {
       const p = page(ctx);
       const before = here(p).pathname;
-      if (!PLAYING.test(before)) throw new Error("nothing is playing on HBO Max");
+      if (!PLAYING.test(before)) throw new Error("Nothing is playing on HBO Max");
       const pressed = await p.evaluate(() => {
         const next = document.querySelector<HTMLElement>('[data-testid="player-ux-up-next-button"]');
         next?.click();
         return !!next;
       });
-      if (!pressed) throw new Error("HBO Max offers no next episode here");
+      if (!pressed) throw new Error("There's no next episode");
       for (let waited = 0; waited < 7_000; waited += 250) {
         await sleep(250);
         if ((await p.evaluate(() => location.pathname)) !== before) return;
       }
-      throw new Error("HBO Max didn't move to the next episode");
+      throw new Error("Couldn't skip to the next episode");
     },
 
     // The player's own play and pause, so HBO Max's player knows. Play and
     // pause on the phone come here first, then to the video on the page.
     async pause(ctx) {
       const p = page(ctx);
-      if (!PLAYING.test(here(p).pathname)) throw new Error("nothing is playing on HBO Max");
+      if (!PLAYING.test(here(p).pathname)) throw new Error("Nothing is playing on HBO Max");
       const why = await p.evaluate(playOrPause, "paused");
       if (why) throw new Error(why);
     },
 
     async resume(ctx) {
       const p = page(ctx);
-      if (!PLAYING.test(here(p).pathname)) throw new Error("nothing is playing on HBO Max");
+      if (!PLAYING.test(here(p).pathname)) throw new Error("Nothing is playing on HBO Max");
       const why = await p.evaluate(playOrPause, "playing");
       if (why) throw new Error(why);
     },
