@@ -12,9 +12,9 @@ Right now there are seven:
 - **HBO Max.** HBO Max's own site on the TV, the same way: sign in from your phone, search, ask for an episode by name and season, and pick up where you left off. HBO Max asks who's watching on its own page, and your phone's arrows pick.
 - **Prime Video.** Prime Video's own site on the TV, the same way. On Linux, Prime Video plays in SD. It picks any season from the series' own season list, and Prime Video asks who's watching on its own page.
 - **Jellyfin.** Your Jellyfin films and shows on the TV. Search, open something, and pick up where you left off.
+- **Plex.** Your Plex server's own web app on the TV, signed in with your Plex account. Search and picking up where you left off are coming soon.
 - **Immich.** Your Immich photos on the TV. Search your albums and open one.
 - **Steam.** Steam Big Picture, full screen. Go back to home and your game keeps running, with a Quit button on its tile. If Steam isn't on the box yet, adding the app installs it, and you sign in right on the TV.
-- **Plex.** Your Plex server's own web app on the TV, signed in with your Plex account. Search and picking up where you left off are coming soon.
 
 To add one, open _Apps_ on the TV and pick it. That's it.
 
@@ -48,6 +48,7 @@ That's what CI runs on a pull request:
 - type checks against the app rules in [agentv-os](https://github.com/radomird/agentv-os)
 - each app against its test data (replies recorded from its real server, or pages made by hand), in a real Chromium with no network
 - a real install, from a test list signed with a throwaway key
+- a check that every app you changed has a newer version in its manifest
 
 Steam doesn't talk to a server, so there's nothing to record for it. Its tests just make sure it follows the rules and doesn't try anything else.
 
@@ -57,13 +58,17 @@ To record fresh test data, push a branch named `record/jellyfin`, `record/immich
 
 ## What you won't find here
 
-Anything for Spotify. And the apps AgenTV's agent builds on your box stay on your box.
+Anything for Spotify. And the apps you make on your box stay there.
 
 Each streaming app keeps its service's addresses, and the parts of its pages it reads, in its own folder. Nothing else in this repo has them.
 
 ## Whose names these are
 
 Disney+, Netflix, Prime Video, HBO Max and YouTube are trademarks of their owners. I only name them to say which services the apps work with. The apps aren't made or endorsed by any of them.
+
+## Something's broken?
+
+A streaming service changes its pages now and then, and an app here can stop finding its way around them. When that happens the tile still opens the service's site. [Tell me](https://github.com/radomird/agentv-apps/issues/new/choose) which app and what you pressed, and I'll fix it. For a security problem, please [tell me privately](https://github.com/radomird/agentv-apps/security/advisories/new) first.
 
 ## License
 
