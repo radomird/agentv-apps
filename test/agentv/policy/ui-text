@@ -1,0 +1,3 @@
+# Files with words people read on the TV: each app's name, description and
+# messages. bin/agentv-check holds them to AgenTV's voice (ui-words).
+apps/
