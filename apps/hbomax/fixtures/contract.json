@@ -284,6 +284,73 @@
       "throws": "Couldn't find Lantern on HBO Max"
     },
     {
+      "name": "show() opens a show's own page from New this week, found by its name and kind, without playing it",
+      "page": "https://www.hbomax.com/movie/f17a0000-0000-4000-8000-000000000002",
+      "call": "playback.show",
+      "args": [
+        {
+          "id": "tmdb:tv:1",
+          "kind": "series",
+          "title": "Lantern Bay",
+          "year": 2024
+        }
+      ],
+      "expect": true,
+      "after": {
+        "url": "/show/1a7e0000-0000-4000-8000-000000000001$"
+      }
+    },
+    {
+      "name": "show() opens a film's own page when its year matches, without playing it",
+      "page": "https://www.hbomax.com/show/1a7e0000-0000-4000-8000-000000000001",
+      "call": "playback.show",
+      "args": [
+        {
+          "id": "tmdb:movie:2",
+          "kind": "film",
+          "title": "Lantern Bay: The Movie",
+          "year": 2026
+        }
+      ],
+      "expect": true,
+      "after": {
+        "url": "/movie/f17a0000-0000-4000-8000-000000000002$"
+      }
+    },
+    {
+      "name": "show() doesn't pick a film from another year, and leaves HBO Max on its search",
+      "page": "https://www.hbomax.com/show/1a7e0000-0000-4000-8000-000000000001",
+      "call": "playback.show",
+      "args": [
+        {
+          "id": "tmdb:movie:3",
+          "kind": "film",
+          "title": "Lanterns",
+          "year": 2026
+        }
+      ],
+      "expect": false,
+      "after": {
+        "url": "/search$"
+      }
+    },
+    {
+      "name": "show() doesn't pick a show for a film of the same name",
+      "page": "https://www.hbomax.com/movie/f17a0000-0000-4000-8000-000000000002",
+      "call": "playback.show",
+      "args": [
+        {
+          "id": "tmdb:movie:4",
+          "kind": "film",
+          "title": "Lantern Bay"
+        }
+      ],
+      "expect": false,
+      "after": {
+        "url": "/search$"
+      }
+    },
+    {
       "name": "readPlaybackState reads the title, season and episode off the hidden controls, and the position off the video's clock",
       "id": "T9.1",
       "page": "https://www.hbomax.com/video/watch/e9150de0-0000-4000-8000-000000000102",

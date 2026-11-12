@@ -43,6 +43,28 @@ function here(p: AppPage): URL {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// The one search result that's this title: the same name, then the same
+// kind and year where HBO Max says them, so a remake or a show with the same
+// name isn't picked. A year a year out still counts when there's no exact
+// one, since a title can come out a year apart from one country to the
+// next. Null when none is.
+function sameName(a: string, b: string): boolean {
+  const plain = (text: string) => text.toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, " ").trim();
+  return plain(a) === plain(b);
+}
+
+function pick(found: Item[], item: Item): Item | null {
+  const named = found.filter((title) => sameName(title.title, item.title) && (item.kind === "film") === (title.kind === "film"));
+  if (!item.year) return named[0] ?? null;
+  const year = (title: Item) => (title.subtitle && /^\d{4}$/.test(title.subtitle) ? Number(title.subtitle) : null);
+  return (
+    named.find((title) => year(title) === item.year) ??
+    named.find((title) => year(title) !== null && Math.abs(year(title)! - item.year!) === 1) ??
+    named.find((title) => year(title) === null) ??
+    null
+  );
+}
+
 // --- In the page ---------------------------------------------------------------
 // Each of these runs in HBO Max's page, so it uses nothing from outside itself.
 
@@ -222,6 +244,23 @@ const app: TvApp = {
         throw new Error(`Couldn't play ${item.title}`);
       }
       await p.waitForSelector('video[data-testid="VideoElement"]', { timeout: 15_000, state: "attached" });
+    },
+
+    // A title's own page, without playing it: by its id, or found by its
+    // name, kind and year. Resolves true on its page, where Play is one
+    // press away, or false when HBO Max doesn't have it, left on its own
+    // search for the name.
+    async show(ctx, item) {
+      const p = page(ctx);
+      let path = TITLE.test(item.id) ? item.id : null;
+      if (!path) {
+        const found = pick(await app.search!(ctx, item.title), item);
+        if (!found) return false;
+        path = found.id;
+      }
+      await p.goto(`${ORIGIN}/${path}`);
+      await p.waitForSelector('[data-testid="play_button"]', { timeout: 10_000 });
+      return true;
     },
 
     // Off the player's controls, which stay in the page while they're hidden,

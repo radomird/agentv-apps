@@ -68,5 +68,5 @@ done
 sed -i.bak 's/"version": *"[^"]*"/"version": "9.9.9"/' "$work/index/index.json"
 status=0
 out=$(install agentv.jellyfin --index "$work/index" 2>&1) || status=$?
-(( status == 1 )) && [[ $out == *"isn't signed by AgenTV's key"* ]] || fail "a tampered index is refused" "exit $status: $out"
+(( status == 1 )) && [[ $out == *"Couldn't verify the app list"* ]] || fail "a tampered index is refused" "exit $status: $out"
 pass "a tampered index installs nothing"
