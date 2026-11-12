@@ -17,24 +17,24 @@ interface ImmichAlbum {
   assetCount?: number;
 }
 
-function timed<T>(promise: Promise<T>, ms: number, what: string): Promise<T> {
+function timed<T>(promise: Promise<T>, ms: number): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   return Promise.race([
     promise,
     new Promise<never>((_, reject) => {
-      timer = setTimeout(() => reject(new Error(`${what} took longer than ${ms / 1000} s`)), ms);
+      timer = setTimeout(() => reject(new Error("Immich took too long")), ms);
     }),
   ]).finally(() => clearTimeout(timer));
 }
 
 function serverOf(ctx: AppContext): string {
   const url = ctx.settings.serverUrl ?? "";
-  if (!/^https?:\/\/[^/]/.test(url)) throw new Error("Immich has no server address yet");
+  if (!/^https?:\/\/[^/]/.test(url)) throw new Error("Add Immich's server address first");
   return url.replace(/\/+$/, "");
 }
 
 function pageOf(ctx: AppContext) {
-  if (!ctx.page) throw new Error("Immich's page isn't open");
+  if (!ctx.page) throw new Error("Open Immich first");
   return ctx.page;
 }
 
@@ -51,14 +51,13 @@ async function ask<T>(ctx: AppContext, path: string): Promise<{ signedIn: boolea
       return { signedIn, status: response.status, body: response.ok ? await response.json() : null };
     }, url),
     ASK_MS,
-    "Immich",
   ) as Promise<{ signedIn: boolean; status: number; body: T | null }>;
 }
 
 async function albums(ctx: AppContext): Promise<ImmichAlbum[]> {
   const reply = await ask<ImmichAlbum[]>(ctx, "/api/albums");
-  if (reply.status === 401) throw new Error("Immich isn't signed in");
-  if (reply.status !== 200) throw new Error(`Immich answered ${reply.status}`);
+  if (reply.status === 401) throw new Error("Sign in to Immich first");
+  if (reply.status !== 200) throw new Error("Couldn't reach Immich");
   return reply.body ?? [];
 }
 
@@ -74,7 +73,7 @@ const app: TvApp = {
     async isSignedIn(ctx) {
       const reply = await ask(ctx, "/api/users/me");
       if (reply.status === 401) return false;
-      if (reply.status !== 200) throw new Error(`Immich answered ${reply.status}`);
+      if (reply.status !== 200) throw new Error("Couldn't reach Immich");
       return true;
     },
   },
@@ -97,11 +96,11 @@ const app: TvApp = {
   playback: {
     // Shows the album on Immich's own page. Resolves when the page is there.
     async open(ctx, item) {
-      if (item.kind !== "photo-album" || !/^[0-9a-f-]{36}$/i.test(item.id)) throw new Error(`Immich can't open ${item.title}`);
+      if (item.kind !== "photo-album" || !/^[0-9a-f-]{36}$/i.test(item.id)) throw new Error(`Couldn't open ${item.title}`);
       const page = pageOf(ctx);
       const address = `${serverOf(ctx)}/albums/${item.id}`;
-      await timed(page.goto(address), OPEN_MS, `opening ${item.title}`);
-      if (!page.url().startsWith(address)) throw new Error(`Immich didn't open ${item.title}`);
+      await timed(page.goto(address), OPEN_MS);
+      if (!page.url().startsWith(address)) throw new Error(`Couldn't open ${item.title}`);
     },
 
     // An album looked at isn't something watched, so it goes in no ledger
