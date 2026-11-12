@@ -5,7 +5,7 @@
   "version": "1.0.1",
   "author": "agentv",
   "license": "MIT",
-  "description": "Prime Video, in standard definition",
+  "description": "Prime Video. Plays in standard definition.",
   "kinds": ["tv-app"],
   "entryPoints": { "tvApp": "app.ts" },
   "tv": {
