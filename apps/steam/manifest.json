@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "agentv.steam",
   "name": "Steam",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "agentv",
   "license": "MIT",
-  "description": "Steam Big Picture on the TV, full screen",
+  "description": "Your Steam games, full screen",
   "kinds": ["tv-app"],
   "entryPoints": { "tvApp": "app.ts" },
   "tv": {

@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "agentv.jellyfin",
   "name": "Jellyfin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "agentv",
   "license": "MIT",
-  "description": "Your Jellyfin library on the TV",
+  "description": "Your Jellyfin library",
   "kinds": ["tv-app"],
   "entryPoints": { "tvApp": "app.ts" },
   "tv": {

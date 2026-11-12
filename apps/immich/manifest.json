@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "id": "agentv.immich",
   "name": "Immich",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "agentv",
   "license": "MIT",
-  "description": "Your Immich photos on the TV",
+  "description": "Your Immich photos",
   "kinds": ["tv-app"],
   "entryPoints": { "tvApp": "app.ts" },
   "tv": {
