@@ -14,7 +14,7 @@ Right now there are seven:
 - **Jellyfin.** Your Jellyfin films and shows on the TV. Search, open something, and pick up where you left off.
 - **Plex.** Your Plex server's own web app on the TV, signed in with your Plex account. Search and picking up where you left off are coming soon.
 - **Immich.** Your Immich photos on the TV. Search your albums and open one.
-- **Steam.** Steam Big Picture, full screen. Go back to home and your game keeps running, with a Quit button on its tile. If Steam isn't on the box yet, adding the app installs it, and you sign in right on the TV.
+- **Steam.** Steam Big Picture, full screen. Go back to home and your game keeps running. To quit it, hold OK on its tile and pick Quit. If Steam isn't on the box yet, adding the app installs it, and you sign in right on the TV.
 
 To add one, open _Apps_ on the TV and pick it. That's it.
 

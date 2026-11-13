@@ -19,4 +19,4 @@ The plan lives in `agentv-planning`: read its `HANDOFF.md` first, then the ADRs 
 ## Before you commit
 
 - Run `test/run`. A task isn't done until it's green.
-- Commit with this repo's own git identity, and end the message with the Co-Authored-By trailer. Log progress in `agentv-planning`'s `LOG.md`.
+- Commit with this repo's own git identity. Leave out any AI attribution: no Co-Authored-By or session trailers in commit messages, and no "Generated with" line in pull requests. Log progress in `agentv-planning`'s `LOG.md`.
