@@ -18,6 +18,8 @@ Right now there are seven:
 
 To add one, open _Apps_ on the TV and pick it. That's it.
 
+Disney+, HBO Max and Prime Video also work with New this week on your TV. Pick a title there and its app opens on that title's own page, ready for you to press play.
+
 Netflix, YouTube and YouTube Kids are coming soon.
 
 ## Your passwords stay yours
